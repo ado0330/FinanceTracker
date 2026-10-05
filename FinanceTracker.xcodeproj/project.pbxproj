@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		005A1FB2F014F295555D5B71 /* BackTapScreenshotService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F346A1B22105F8FC88239954 /* BackTapScreenshotService.swift */; };
 		038AF3CF37355ADF3478B48C /* AddEditRecurringView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBE1FFB81BBD92DCA2AEB47E /* AddEditRecurringView.swift */; };
+		05D6CA105338C4F409C192A1 /* SyncModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = E007A5066003C27818EF8A6E /* SyncModels.swift */; };
 		068A6BB1B41D5A1F008C6F92 /* ExistingFriend.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54B61BFCA3AB66A4AE1AEAE7 /* ExistingFriend.swift */; };
 		06BCECA0897F94255F8D3B64 /* IconPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04C2FF3AB98B0E5B0279ADA3 /* IconPickerView.swift */; };
 		081752E863EA9CA1432D69B5 /* RecurringService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C46E1BE6ACE8D521BDCEC2A /* RecurringService.swift */; };
@@ -23,6 +24,7 @@
 		281FD746EDC56F33C06BC861 /* CSVService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EE9C7089CD139E625A7F857 /* CSVService.swift */; };
 		2AF7E9AC649F6BFF3FB266C2 /* LedgerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25FF8733FF0CF9B2B37D1BDD /* LedgerTests.swift */; };
 		2DE3F7D0F0C2938450A0C7E9 /* ReceiptScannerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D7BEB7466D708274B4E8BC /* ReceiptScannerService.swift */; };
+		2DED1BA4B4224348BCB5FE91 /* SyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2A64D27C62AEDA1D1999FCB /* SyncTests.swift */; };
 		305103CD5DC79C909C70DAD0 /* Color+Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD43EA5B59639F4EED62160 /* Color+Hex.swift */; };
 		359B3C1EAF4AD6C560672D65 /* CategoryExpensesDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87BA8EB7091C6B76CE252E32 /* CategoryExpensesDetailSheet.swift */; };
 		36374E92D5ECE3F9A99FE0F1 /* RecurringServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEE9E5E172326542F9F8036A /* RecurringServiceTests.swift */; };
@@ -30,9 +32,11 @@
 		390B1881B025AB8F163353E1 /* MathExpressionEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 420E62099EBD9212EAC948E3 /* MathExpressionEvaluator.swift */; };
 		392C4A4452093BA86FFB247F /* AddEditAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32CA054F46A3E0BC8676B186 /* AddEditAccountView.swift */; };
 		3A6AA0152633687D9F4205B4 /* SplitAuxiliaryModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5119741D4528F2845D37B4E1 /* SplitAuxiliaryModels.swift */; };
+		3CB4E21BB848F7E600899775 /* SyncStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F748F5564D6757E2CF0282 /* SyncStatusBadge.swift */; };
 		4009960D0C4E426893717959 /* ChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E100308073360A1CDBF779C2 /* ChartsView.swift */; };
 		42D6C43F8F5B7F7800D2C85E /* TransactionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1DA621C2E2FB82DF42D9520 /* TransactionListView.swift */; };
 		442C5DBD62582BE4528EBBB0 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = C02E659D431A9B975A8D0B02 /* Tag.swift */; };
+		484526D02BC81B9206D47D4E /* Secrets.example.plist in Resources */ = {isa = PBXBuildFile; fileRef = F52928CC0B1123F514FF7E88 /* Secrets.example.plist */; };
 		4905C820DB298B91110FB9AA /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B526BD3577B5DDFCF1276D89 /* CameraPickerView.swift */; };
 		4ABCB8B458FC09CBEFF60F72 /* LedgerSwitcherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601A79ECCC886870F8E000A3 /* LedgerSwitcherView.swift */; };
 		4DF3F0DF19E45B205C74893C /* ReceiptImageViewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68C3120D667DDAC18A60CC46 /* ReceiptImageViewer.swift */; };
@@ -40,6 +44,7 @@
 		5450805ACF38AC37B4B11533 /* Double+Currency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A801B39BD2797E0689B2AE /* Double+Currency.swift */; };
 		56A4A3ADBECC2BAB080ECB26 /* SplitMemberManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B0395F47EB0F8FB010D33B /* SplitMemberManagementView.swift */; };
 		582C40DD8CDB30D37A41E3C5 /* TransferFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FACBA2C71EE756EEF0476DD /* TransferFundsSheet.swift */; };
+		59163C6CF6403B31111707AA /* Secrets.local.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6FBE89ED965F13B9E12FB692 /* Secrets.local.plist */; };
 		5A2BBFD3E1A19EA326944854 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222193AAE17AFF5D94335B71 /* Category.swift */; };
 		5B7FB992DB6AE5173ABE4317 /* SplitterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8631427D6A581931B5B8695B /* SplitterTests.swift */; };
 		5C6CBF6252200A0422074D40 /* TransactionDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374813E6EBF4FF3F03088381 /* TransactionDetailSheet.swift */; };
@@ -88,6 +93,7 @@
 		E9BE8FDAB7470BF0D3F0A2C6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C5819A4B49AB20A4F7212123 /* Assets.xcassets */; };
 		E9BF99D2A9C52D4E2DEB5056 /* BudgetViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 099AE170421737ECBCD75431 /* BudgetViewModel.swift */; };
 		ED5EC89741ED199BB63BBB75 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DCF3262A11633D2A2992AA8 /* EmptyStateView.swift */; };
+		EFA1D577E00CAF0AD70466FD /* SyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0F7D95EE76F33FAE6AAB80F /* SyncEngine.swift */; };
 		F13E5A8FA6CE182248231387 /* TrendLineChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA1092C6A6F6C4A71867D4BA /* TrendLineChart.swift */; };
 		F287C9612E8CDBDA9C812EF6 /* TestModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3679EDA6A0FE306B8B7BB5C6 /* TestModelContainer.swift */; };
 		F63FA051BD8D65295E4E4AA5 /* Ledger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F21063048F9DC45953DD689 /* Ledger.swift */; };
@@ -136,6 +142,7 @@
 		3A80D37D47A8FCC78A9698B2 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3E69796F9DE9E9822FAA9373 /* TransactionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRowView.swift; sourceTree = "<group>"; };
 		3F21063048F9DC45953DD689 /* Ledger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ledger.swift; sourceTree = "<group>"; };
+		40F748F5564D6757E2CF0282 /* SyncStatusBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatusBadge.swift; sourceTree = "<group>"; };
 		420E62099EBD9212EAC948E3 /* MathExpressionEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathExpressionEvaluator.swift; sourceTree = "<group>"; };
 		47BBAAC4BA3A09D0604BC9E2 /* AddEditTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditTransactionView.swift; sourceTree = "<group>"; };
 		4E098A12D5E8EC0ED20BB6E0 /* SplitGroup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitGroup.swift; sourceTree = "<group>"; };
@@ -157,8 +164,9 @@
 		69A0F85FAB8E8DA60ADAE31A /* TagListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagListView.swift; sourceTree = "<group>"; };
 		6CDE8C02A6FA4ABF92D32A0C /* CategorySpendingComparisonCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySpendingComparisonCard.swift; sourceTree = "<group>"; };
 		6FACBA2C71EE756EEF0476DD /* TransferFundsSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransferFundsSheet.swift; sourceTree = "<group>"; };
+		6FBE89ED965F13B9E12FB692 /* Secrets.local.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Secrets.local.plist; sourceTree = "<group>"; };
 		72A48268842CEA7EB69245F8 /* DataSeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataSeeder.swift; sourceTree = "<group>"; };
-		757995A4D36A72157916AA04 /* FinanceTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FinanceTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		757995A4D36A72157916AA04 /* FinanceTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FinanceTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7785C05F68DE14D2D610B4F6 /* SplitSettlement.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitSettlement.swift; sourceTree = "<group>"; };
 		7A06AFD642782DEEB41104BF /* AddEditSplitGroupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditSplitGroupView.swift; sourceTree = "<group>"; };
 		7AF40E9989C189225F6D4149 /* AddEditCategoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCategoryView.swift; sourceTree = "<group>"; };
@@ -176,7 +184,9 @@
 		9AD43EA5B59639F4EED62160 /* Color+Hex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Hex.swift"; sourceTree = "<group>"; };
 		A3F06E23DF4412A149380BD0 /* BudgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetTests.swift; sourceTree = "<group>"; };
 		ACA06389AFF8247679ABDB9F /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		B0F7D95EE76F33FAE6AAB80F /* SyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncEngine.swift; sourceTree = "<group>"; };
 		B1DA621C2E2FB82DF42D9520 /* TransactionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionListView.swift; sourceTree = "<group>"; };
+		B2A64D27C62AEDA1D1999FCB /* SyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncTests.swift; sourceTree = "<group>"; };
 		B526BD3577B5DDFCF1276D89 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPickerView.swift; sourceTree = "<group>"; };
 		B7905402D11D4CCBE0E4AE47 /* Date+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+Helpers.swift"; sourceTree = "<group>"; };
 		B819E290787CA3572495F76E /* LedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerViewModel.swift; sourceTree = "<group>"; };
@@ -192,12 +202,14 @@
 		DA1092C6A6F6C4A71867D4BA /* TrendLineChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrendLineChart.swift; sourceTree = "<group>"; };
 		DBE1FFB81BBD92DCA2AEB47E /* AddEditRecurringView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringView.swift; sourceTree = "<group>"; };
 		DF60ABB197211F0573D58BD7 /* TransactionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionViewModel.swift; sourceTree = "<group>"; };
+		E007A5066003C27818EF8A6E /* SyncModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModels.swift; sourceTree = "<group>"; };
 		E100308073360A1CDBF779C2 /* ChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartsView.swift; sourceTree = "<group>"; };
 		EBA7E1B4377FF86E7A1A3DB7 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		EEBAEC942E32F6EC03A56B6B /* TransactionPreviewCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionPreviewCard.swift; sourceTree = "<group>"; };
 		F0B3FECD82C7D6BF5703FFC4 /* RecurringRule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringRule.swift; sourceTree = "<group>"; };
 		F2D12DF6A0CA3921D7FDE0A3 /* AppSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSecrets.swift; sourceTree = "<group>"; };
 		F346A1B22105F8FC88239954 /* BackTapScreenshotService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackTapScreenshotService.swift; sourceTree = "<group>"; };
+		F52928CC0B1123F514FF7E88 /* Secrets.example.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Secrets.example.plist; sourceTree = "<group>"; };
 		FCC91205FB5007A79D2D9F1F /* SplitExpense.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitExpense.swift; sourceTree = "<group>"; };
 		FD6E47741C12A3E8D0897F49 /* SplitGroupSwitcherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitGroupSwitcherView.swift; sourceTree = "<group>"; };
 		FEA8B4FF6312A1C1BEC10634 /* LedgerListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LedgerListView.swift; sourceTree = "<group>"; };
@@ -234,6 +246,7 @@
 				25FF8733FF0CF9B2B37D1BDD /* LedgerTests.swift */,
 				FEE9E5E172326542F9F8036A /* RecurringServiceTests.swift */,
 				8631427D6A581931B5B8695B /* SplitterTests.swift */,
+				B2A64D27C62AEDA1D1999FCB /* SyncTests.swift */,
 				3679EDA6A0FE306B8B7BB5C6 /* TestModelContainer.swift */,
 			);
 			path = FinanceTrackerTests;
@@ -258,6 +271,7 @@
 				17957A51FBABDC17EFDDB435 /* ColorPickerView.swift */,
 				5DCF3262A11633D2A2992AA8 /* EmptyStateView.swift */,
 				04C2FF3AB98B0E5B0279ADA3 /* IconPickerView.swift */,
+				40F748F5564D6757E2CF0282 /* SyncStatusBadge.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -309,6 +323,8 @@
 			isa = PBXGroup;
 			children = (
 				F2D12DF6A0CA3921D7FDE0A3 /* AppSecrets.swift */,
+				F52928CC0B1123F514FF7E88 /* Secrets.example.plist */,
+				6FBE89ED965F13B9E12FB692 /* Secrets.local.plist */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -387,6 +403,15 @@
 			path = Recurring;
 			sourceTree = "<group>";
 		};
+		E0EC0DF8348E19F4CF8BB1F5 /* Sync */ = {
+			isa = PBXGroup;
+			children = (
+				B0F7D95EE76F33FAE6AAB80F /* SyncEngine.swift */,
+				E007A5066003C27818EF8A6E /* SyncModels.swift */,
+			);
+			path = Sync;
+			sourceTree = "<group>";
+		};
 		F18B063A2151E677CF5EE1F6 = {
 			isa = PBXGroup;
 			children = (
@@ -447,6 +472,7 @@
 				EBA7E1B4377FF86E7A1A3DB7 /* NotificationService.swift */,
 				51D7BEB7466D708274B4E8BC /* ReceiptScannerService.swift */,
 				5C46E1BE6ACE8D521BDCEC2A /* RecurringService.swift */,
+				E0EC0DF8348E19F4CF8BB1F5 /* Sync */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -525,6 +551,7 @@
 						ProvisioningStyle = Automatic;
 					};
 					699EDD251BE9DFDD836EA7BB = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -555,6 +582,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				E9BE8FDAB7470BF0D3F0A2C6 /* Assets.xcassets in Resources */,
+				484526D02BC81B9206D47D4E /* Secrets.example.plist in Resources */,
+				59163C6CF6403B31111707AA /* Secrets.local.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -635,6 +664,9 @@
 				1461FAFCF7100BC4C5129487 /* SplitSettlement.swift in Sources */,
 				B687DEF0B2C13D09E143A835 /* SplitterMainView.swift in Sources */,
 				B51334EA4B58BA0F07AFCE7E /* SummaryCardView.swift in Sources */,
+				EFA1D577E00CAF0AD70466FD /* SyncEngine.swift in Sources */,
+				05D6CA105338C4F409C192A1 /* SyncModels.swift in Sources */,
+				3CB4E21BB848F7E600899775 /* SyncStatusBadge.swift in Sources */,
 				442C5DBD62582BE4528EBBB0 /* Tag.swift in Sources */,
 				9B76E3F2D0F3B507357A4316 /* TagListView.swift in Sources */,
 				7DFA57237C30CF2372476841 /* Transaction.swift in Sources */,
@@ -659,6 +691,7 @@
 				2AF7E9AC649F6BFF3FB266C2 /* LedgerTests.swift in Sources */,
 				36374E92D5ECE3F9A99FE0F1 /* RecurringServiceTests.swift in Sources */,
 				5B7FB992DB6AE5173ABE4317 /* SplitterTests.swift in Sources */,
+				2DED1BA4B4224348BCB5FE91 /* SyncTests.swift in Sources */,
 				F287C9612E8CDBDA9C812EF6 /* TestModelContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -728,7 +761,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -744,7 +777,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.8.4;
+				MARKETING_VERSION = 1.9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -762,7 +795,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FinanceTracker/FinanceTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 86QX4RQLN5;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = FinanceTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -770,7 +802,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jasonkhaw.FinanceTracker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.FinanceTracker;
 				PRODUCT_NAME = FinanceTracker;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -804,7 +836,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = FinanceTracker/FinanceTracker.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = 86QX4RQLN5;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				INFOPLIST_FILE = FinanceTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -812,7 +843,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.jasonkhaw.FinanceTracker;
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.FinanceTracker;
 				PRODUCT_NAME = FinanceTracker;
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -855,7 +886,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 20;
+				CURRENT_PROJECT_VERSION = 21;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -877,7 +908,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.8.4;
+				MARKETING_VERSION = 1.9.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;

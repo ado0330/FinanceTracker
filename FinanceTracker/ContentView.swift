@@ -11,6 +11,7 @@ struct ContentView: View {
 
     @Environment(\.modelContext) private var context
     @Environment(AppState.self)  private var appState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     // MARK: - Queries
 
@@ -32,77 +33,213 @@ struct ContentView: View {
     // MARK: - Body
 
     var body: some View {
-        @Bindable var appState = appState   // Needed for two-way tab binding
+        @Bindable var appState = appState
 
-        TabView(selection: $appState.selectedTab) {
+        Group {
+            if horizontalSizeClass == .regular {
+                ipadNavigationSplitView
+            } else {
+                iphoneTabView
+            }
+        }
+        .tint(.primary)
+        .preferredColorScheme(currentColorScheme)
 
-            // ── Tab 1: Dashboard ──────────────────────────────────────────
+        // MARK: - Global Action Sheets
+        .sheet(isPresented: $appState.showAddTransactionSheet) {
+            AddEditTransactionView {
+                appState.showAddTransactionSheet = false
+            }
+        }
+        .sheet(isPresented: $appState.showBackTapScanner) {
+            BackTapQuickScanView()
+        }
+
+        // MARK: - Keyboard Shortcuts
+        .background {
+            keyboardShortcutsHandler
+        }
+
+        // MARK: - Bootstrap & Cloud Sync
+        .task {
+            DataSeeder.seedIfNeeded(context: context)
+            DataSeeder.migrateExistingDataIfNeeded(context: context)
+            selectDefaultLedger()
+            RecurringService.processOverdue(context: context)
+
+            // Start Realtime sync and initial sync
+            SyncEngine.shared.startRealtimeSync(context: context)
+            await SyncEngine.shared.syncAll(context: context)
+        }
+        .onChange(of: ledgers) { _, _ in
+            selectDefaultLedger()
+        }
+        .onOpenURL { url in
+            handleIncomingURL(url)
+        }
+    }
+
+    // MARK: - iPad Split View Layout
+
+    private var ipadNavigationSplitView: some View {
+        @Bindable var appState = appState
+
+        let sidebarSelection = Binding<AppState.AppTab?>(
+            get: { appState.selectedTab },
+            set: { if let val = $0 { appState.selectedTab = val } }
+        )
+
+        return NavigationSplitView {
+            List(selection: sidebarSelection) {
+                Section {
+                    HStack(spacing: 10) {
+                        Image(systemName: "banknote.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundStyle(.primary)
+                            .frame(width: 34, height: 34)
+                            .background(Color.primary.opacity(0.08))
+                            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("FinanceTracker")
+                                .font(.headline.weight(.bold))
+                                .foregroundStyle(.primary)
+                            Text("iPad Edition")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        SyncStatusBadge()
+                    }
+                    .padding(.vertical, 4)
+                }
+
+                Section("Navigation") {
+                    Label("Dashboard", systemImage: "chart.bar.fill")
+                        .tag(AppState.AppTab.dashboard)
+                    Label("Transactions", systemImage: "list.bullet.rectangle.fill")
+                        .tag(AppState.AppTab.transactions)
+                    Label("Charts & Analytics", systemImage: "chart.pie.fill")
+                        .tag(AppState.AppTab.charts)
+                    Label("Expense Splitter", systemImage: "person.2.fill")
+                        .tag(AppState.AppTab.splitter)
+                    Label("Budgets", systemImage: "dial.medium.fill")
+                        .tag(AppState.AppTab.budgets)
+                    Label("Settings", systemImage: "gear")
+                        .tag(AppState.AppTab.settings)
+                }
+
+                Section {
+                    Button {
+                        appState.showAddTransactionSheet = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.subheadline.weight(.semibold))
+                            Text("New Transaction")
+                                .font(.subheadline.weight(.semibold))
+                            Spacer()
+                            Text("⌘N")
+                                .font(.caption2.bold())
+                                .foregroundStyle(.secondary)
+                        }
+                        .foregroundStyle(.primary)
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .listStyle(.sidebar)
+            .navigationTitle("FinanceTracker")
+        } detail: {
+            detailViewForSelectedTab
+        }
+    }
+
+    // MARK: - iPhone Tab View Layout
+
+    private var iphoneTabView: some View {
+        @Bindable var appState = appState
+
+        return TabView(selection: $appState.selectedTab) {
             DashboardView()
                 .tabItem {
                     Label("Dashboard", systemImage: "chart.bar.fill")
                 }
                 .tag(AppState.AppTab.dashboard)
 
-            // ── Tab 2: Transactions ───────────────────────────────────────
             TransactionListView()
                 .tabItem {
                     Label("Transactions", systemImage: "list.bullet.rectangle.fill")
                 }
                 .tag(AppState.AppTab.transactions)
 
-            // ── Tab 3: Charts ─────────────────────────────────────────────
             ChartsView()
                 .tabItem {
                     Label("Charts", systemImage: "chart.pie.fill")
                 }
                 .tag(AppState.AppTab.charts)
 
-            // ── Tab 4: Splitter ───────────────────────────────────────────
             SplitterMainView()
                 .tabItem {
                     Label("Splitter", systemImage: "person.2.fill")
                 }
                 .tag(AppState.AppTab.splitter)
 
-            // ── Tab 5: Budgets ────────────────────────────────────────────
             BudgetListView()
                 .tabItem {
                     Label("Budgets", systemImage: "dial.medium.fill")
                 }
                 .tag(AppState.AppTab.budgets)
 
-            // ── Tab 6: Settings ───────────────────────────────────────────
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gear")
                 }
                 .tag(AppState.AppTab.settings)
         }
-        .tint(.primary)
-        .preferredColorScheme(currentColorScheme)
+    }
 
-        // MARK: - Bootstrap
+    // MARK: - Detail View Router
 
-        // Runs once on cold launch — seeding is idempotent (no-op after first run).
-        .task {
-            DataSeeder.seedIfNeeded(context: context)
-            DataSeeder.migrateExistingDataIfNeeded(context: context)
-            selectDefaultLedger()
-            RecurringService.processOverdue(context: context)
+    @ViewBuilder
+    private var detailViewForSelectedTab: some View {
+        switch appState.selectedTab {
+        case .dashboard:
+            DashboardView()
+        case .transactions:
+            TransactionListView()
+        case .charts:
+            ChartsView()
+        case .splitter:
+            SplitterMainView()
+        case .budgets:
+            BudgetListView()
+        case .settings:
+            SettingsView()
         }
+    }
 
-        // After seeding, ledgers will be populated — pick the default one.
-        .onChange(of: ledgers) { _, _ in
-            selectDefaultLedger()
-        }
+    // MARK: - Keyboard Shortcuts Handler
 
-        // MARK: - Back Tap & URL Scheme Handling
-        .onOpenURL { url in
-            handleIncomingURL(url)
+    private var keyboardShortcutsHandler: some View {
+        Group {
+            Button("") { appState.showAddTransactionSheet = true }
+                .keyboardShortcut("n", modifiers: .command)
+            Button("") { appState.selectedTab = .dashboard }
+                .keyboardShortcut("1", modifiers: .command)
+            Button("") { appState.selectedTab = .transactions }
+                .keyboardShortcut("2", modifiers: .command)
+            Button("") { appState.selectedTab = .charts }
+                .keyboardShortcut("3", modifiers: .command)
+            Button("") { appState.selectedTab = .splitter }
+                .keyboardShortcut("4", modifiers: .command)
+            Button("") { appState.selectedTab = .budgets }
+                .keyboardShortcut("5", modifiers: .command)
+            Button("") { appState.selectedTab = .settings }
+                .keyboardShortcut("6", modifiers: .command)
         }
-        .sheet(isPresented: $appState.showBackTapScanner) {
-            BackTapQuickScanView()
-        }
+        .opacity(0)
+        .allowsHitTesting(false)
     }
 
     // MARK: - Helpers

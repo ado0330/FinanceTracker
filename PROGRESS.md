@@ -315,14 +315,24 @@ FinanceTracker/
 - [x] **GIT-04**: Created `AGENTS.md` and `.agents/rules/release_and_progress_sync.md` mandating that every future agent synchronize user requirements into `PROGRESS.md` and automatically push to GitHub upon version bumps ← **(DONE)**
 - [x] **GIT-05**: Initialized git repository on `main` branch, committed initial snapshot, created release tag `v1.8.4`, and pushed code & tags to GitHub ← **(DONE)**
 
+### Phase 31 — v1.9.0 iPad Native Adaptation & Cross-Device Real-time Cloud Synchronization
+- [x] **PAD-01**: Configured iPad target support in `project.yml` with `TARGETED_DEVICE_FAMILY: "1,2"`, full iPad orientation support (`UISupportedInterfaceOrientations~ipad`), and `UIRequiresFullScreen: NO` for Stage Manager and iPad Split View ← **(DONE)**
+- [x] **PAD-02**: Implemented iPadOS native `NavigationSplitView` sidebar on regular width classes (`ContentView.swift`) with luxury monochrome styling, quick transaction shortcut (`Cmd+N`), tab switching keyboard shortcuts (`Cmd+1..6`), and seamless compact `TabView` fallback on iPhone ← **(DONE)**
+- [x] **PAD-03**: Built adaptive multi-column iPad layouts for `DashboardView.swift` (left: period controls & summary cards, right: recent transactions ledger) and `ChartsView.swift` (left: MoM comparisons & category explorer, right: spending donut & trend line chart) ← **(DONE)**
+- [x] **SYNC-01**: Designed zero-cost Supabase PostgreSQL cloud sync schema (`supabase_schema.sql`) with UUID primary keys, `updated_at` triggers, `deleted_at` soft-delete tombstoning, Row Level Security policies, and Realtime publication (`supabase_realtime`) ← **(DONE)**
+- [x] **SYNC-02**: Built robust Cloud Sync Engine (`FinanceTracker/Services/Sync/SyncEngine.swift`) & DTO models (`SyncModels.swift`) featuring offline-first bidirectional sync, Last-Write-Wins conflict resolution, WebSocket Realtime push notifications, and safe SQLite reconciliation ← **(DONE)**
+- [x] **SYNC-03**: Created luxury `SyncStatusBadge` component (`FinanceTracker/Views/Shared/SyncStatusBadge.swift`) integrated into iPad sidebar, iPhone navigation toolbars, with live sync state animation (synced, syncing, offline, error) and 1-tap manual sync trigger ← **(DONE)**
+- [x] **SYNC-04**: Added dedicated Real-Time Cloud Sync section in `SettingsView.swift` with live connection status, custom Supabase URL and Anon Key inputs, manual "Sync Now" button, and interactive 2-minute setup guide modal ← **(DONE)**
+- [x] **SYNC-05**: Added comprehensive automated unit tests in `SyncTests.swift`; verified all 47 tests pass on both iPhone 17 and iPad Air 11-inch (M4) simulators (47/47 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.0 (Build 21)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 30 — v1.8.4 Git Repository Initialization, API Key Protection & GitHub Remote Synchronization (GIT-01 to GIT-05 DONE)
-Next Task      : Ready for User Feature Requests
-Blocking Issues: None
+Last Completed : Phase 31 — v1.9.0 iPad Native Adaptation & Cross-Device Real-time Cloud Synchronization (PAD-01 to PAD-03, SYNC-01 to SYNC-05 DONE)
+Next Task      : Ready for User Feedback / Next Feature Iteration
+Blocking Issues: None (Ready for Production)
 ```
 
 ---
@@ -336,4 +346,4 @@ Blocking Issues: None
 
 ---
 
-*Last updated: v1.8.4 (Build 20) — Git & GitHub Sync established — 2026-10-05*
+*Last updated: v1.9.0 (Build 21) — Phase 31 Completed & Released — 2026-10-05*

@@ -13,6 +13,7 @@ struct AddEditTransactionView: View {
     @Binding var transaction: Transaction?
     var onDismiss: () -> Void
 
+
     @Environment(\.modelContext) private var modelContext
     @Environment(AppState.self) private var appState
 
@@ -62,7 +63,7 @@ struct AddEditTransactionView: View {
     }
 
     // MARK: - Init
-    init(transaction: Binding<Transaction?>, onDismiss: @escaping () -> Void) {
+    init(transaction: Binding<Transaction?> = .constant(nil), onDismiss: @escaping () -> Void = {}) {
         self._transaction = transaction
         self.onDismiss = onDismiss
     }

@@ -120,13 +120,17 @@ struct TransactionListView: View {
                     LedgerSwitcherView()
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        editingTransaction = nil
-                        showingAddEdit = true
-                    } label: {
-                        Image(systemName: "plus")
+                    HStack(spacing: 8) {
+                        SyncStatusBadge()
+
+                        Button {
+                            editingTransaction = nil
+                            showingAddEdit = true
+                        } label: {
+                            Image(systemName: "plus")
+                        }
+                        .accessibilityIdentifier("addTransactionButton")
                     }
-                    .accessibilityIdentifier("addTransactionButton")
                 }
             }
             .sheet(isPresented: $showingAddEdit) {

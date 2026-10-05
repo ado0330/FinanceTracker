@@ -54,19 +54,47 @@ struct DashboardView: View {
         Array(ledgerTransactions.prefix(5))
     }
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var isRegularWidth: Bool {
+        horizontalSizeClass == .regular
+    }
+
     // MARK: - Body
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
-                    DashboardBankAccountsSection()
-                    periodToggle
-                    summaryGrid
-                    recentSection
+                if isRegularWidth {
+                    VStack(spacing: 24) {
+                        DashboardBankAccountsSection()
+
+                        HStack(alignment: .top, spacing: 20) {
+                            VStack(spacing: 16) {
+                                periodToggle
+                                summaryGrid
+                            }
+                            .frame(maxWidth: .infinity)
+
+                            VStack(spacing: 16) {
+                                recentSection
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
+                    .padding(.bottom, 32)
+                } else {
+                    VStack(spacing: 20) {
+                        DashboardBankAccountsSection()
+                        periodToggle
+                        summaryGrid
+                        recentSection
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 32)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Dashboard")
@@ -74,6 +102,9 @@ struct DashboardView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     LedgerSwitcherView()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    SyncStatusBadge()
                 }
             }
             .sheet(item: $detailTransaction) { txn in

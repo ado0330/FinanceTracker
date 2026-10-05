@@ -45,73 +45,140 @@ struct ChartsView: View {
         return set.sorted(by: >)
     }
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var isRegularWidth: Bool {
+        horizontalSizeClass == .regular
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 18) {
+                if isRegularWidth {
+                    // iPad Multi-Column Layout
+                    VStack(spacing: 20) {
+                        monthNavigator
+                        MonthConclusionCard(
+                            selectedDate: selectedMonthDate,
+                            transactions: ledgerTransactions,
+                            currencyCode: currencyCode,
+                            onViewTransactions: {
+                                showMonthBreakdownSheet = true
+                            }
+                        )
+                        .accessibilityIdentifier("monthConclusionCard")
 
-                    // ── Month Navigator ───────────────────────────────────
-                    monthNavigator
+                        HStack(alignment: .top, spacing: 20) {
+                            // Column 1: Comparisons & Category Explorer
+                            VStack(spacing: 20) {
+                                CategorySpendingComparisonCard(
+                                    transactions: ledgerTransactions,
+                                    currencyCode: currencyCode,
+                                    targetDate: selectedMonthDate,
+                                    onSelectCategory: { categoryName in
+                                        drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                                    }
+                                )
+                                .accessibilityIdentifier("spendingComparisonCard")
 
-                    // ── Overall Month Conclusion Card ─────────────────────
-                    MonthConclusionCard(
-                        selectedDate: selectedMonthDate,
-                        transactions: ledgerTransactions,
-                        currencyCode: currencyCode,
-                        onViewTransactions: {
-                            showMonthBreakdownSheet = true
-                        }
-                    )
-                    .accessibilityIdentifier("monthConclusionCard")
+                                categoryExplorerCard
+                                    .accessibilityIdentifier("categoryExpenseExplorer")
+                            }
+                            .frame(maxWidth: .infinity)
 
-                    // ── Category-level Spending Comparison Card ───────────
-                    CategorySpendingComparisonCard(
-                        transactions: ledgerTransactions,
-                        currencyCode: currencyCode,
-                        targetDate: selectedMonthDate,
-                        onSelectCategory: { categoryName in
-                            drilldownTarget = DrilldownTarget(categoryName: categoryName)
-                        }
-                    )
-                    .accessibilityIdentifier("spendingComparisonCard")
+                            // Column 2: Donut Chart & Trend Line
+                            VStack(spacing: 20) {
+                                Picker("Period", selection: $period) {
+                                    ForEach(SummaryPeriod.allCases) { p in
+                                        Text(p.rawValue).tag(p)
+                                    }
+                                }
+                                .pickerStyle(.segmented)
+                                .accessibilityIdentifier("chartsPeriodToggle")
 
-                    // ── Category Expense Explorer ─────────────────────────
-                    categoryExplorerCard
-                        .accessibilityIdentifier("categoryExpenseExplorer")
+                                SpendingDonutChart(
+                                    period: period,
+                                    targetDate: selectedMonthDate,
+                                    onSelectCategory: { categoryName in
+                                        drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                                    }
+                                )
+                                .accessibilityIdentifier("spendingDonutChart")
 
-                    // ── Period toggle for Donut Chart ─────────────────────
-                    Picker("Period", selection: $period) {
-                        ForEach(SummaryPeriod.allCases) { p in
-                            Text(p.rawValue).tag(p)
+                                TrendLineChart(
+                                    targetDate: selectedMonthDate,
+                                    onSelectMonth: { tappedDate in
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            selectedMonthDate = tappedDate
+                                        }
+                                    }
+                                )
+                                .accessibilityIdentifier("trendLineChart")
+                            }
+                            .frame(maxWidth: .infinity)
                         }
                     }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, 2)
-                    .accessibilityIdentifier("chartsPeriodToggle")
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 32)
+                } else {
+                    // iPhone Stacked Layout
+                    VStack(spacing: 18) {
+                        monthNavigator
 
-                    // ── Donut chart — category breakdown ──────────────────
-                    SpendingDonutChart(
-                        period: period,
-                        targetDate: selectedMonthDate,
-                        onSelectCategory: { categoryName in
-                            drilldownTarget = DrilldownTarget(categoryName: categoryName)
-                        }
-                    )
-                    .accessibilityIdentifier("spendingDonutChart")
+                        MonthConclusionCard(
+                            selectedDate: selectedMonthDate,
+                            transactions: ledgerTransactions,
+                            currencyCode: currencyCode,
+                            onViewTransactions: {
+                                showMonthBreakdownSheet = true
+                            }
+                        )
+                        .accessibilityIdentifier("monthConclusionCard")
 
-                    // ── Trend chart — 6-month income vs. expense ──────────
-                    TrendLineChart(
-                        targetDate: selectedMonthDate,
-                        onSelectMonth: { tappedDate in
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                selectedMonthDate = tappedDate
+                        CategorySpendingComparisonCard(
+                            transactions: ledgerTransactions,
+                            currencyCode: currencyCode,
+                            targetDate: selectedMonthDate,
+                            onSelectCategory: { categoryName in
+                                drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                            }
+                        )
+                        .accessibilityIdentifier("spendingComparisonCard")
+
+                        categoryExplorerCard
+                            .accessibilityIdentifier("categoryExpenseExplorer")
+
+                        Picker("Period", selection: $period) {
+                            ForEach(SummaryPeriod.allCases) { p in
+                                Text(p.rawValue).tag(p)
                             }
                         }
-                    )
-                    .accessibilityIdentifier("trendLineChart")
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal, 2)
+                        .accessibilityIdentifier("chartsPeriodToggle")
+
+                        SpendingDonutChart(
+                            period: period,
+                            targetDate: selectedMonthDate,
+                            onSelectCategory: { categoryName in
+                                drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                            }
+                        )
+                        .accessibilityIdentifier("spendingDonutChart")
+
+                        TrendLineChart(
+                            targetDate: selectedMonthDate,
+                            onSelectMonth: { tappedDate in
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    selectedMonthDate = tappedDate
+                                }
+                            }
+                        )
+                        .accessibilityIdentifier("trendLineChart")
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 32)
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 32)
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("Analytics & Charts")
@@ -119,6 +186,9 @@ struct ChartsView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     LedgerSwitcherView()
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    SyncStatusBadge()
                 }
             }
             .sheet(isPresented: $showMonthBreakdownSheet) {

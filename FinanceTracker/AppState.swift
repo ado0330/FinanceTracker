@@ -35,8 +35,10 @@ final class AppState {
     /// Set to true to present the full Accounts & Net Worth hub.
     var showAccountsHub: Bool = false
 
-    /// Set to true to present the Add New Account sheet directly.
-    var showAddAccountSheet: Bool = false
+    // MARK: - Global Action Sheets
+
+    /// Set to true to present the Add New Transaction sheet directly (e.g. from Cmd+N or quick action).
+    var showAddTransactionSheet: Bool = false
 
     enum AppTab: Int, Hashable {
         case dashboard
