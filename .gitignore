@@ -1,0 +1,28 @@
+# OS / IDE
+.DS_Store
+*.swp
+*~
+.vscode/
+
+# Xcode & Swift
+build/
+DerivedData/
+*.moved-aside
+*.xcuserstate
+*.xcuserdatad
+xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Secret & API Keys (Strictly Kept Local)
+Secrets.local.plist
+*.local.plist
+*.local.swift
+.env
+*.env
