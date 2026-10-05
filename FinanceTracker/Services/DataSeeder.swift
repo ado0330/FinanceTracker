@@ -183,10 +183,6 @@ struct DataSeeder {
                     duplicate.recurringRules.removeAll()
 
                     context.delete(duplicate)
-
-                    Task {
-                        await SyncEngine.shared.deleteRecordFromCloud(endpoint: "ledgers", id: dupId)
-                    }
                 }
             }
         }
@@ -204,9 +200,6 @@ struct DataSeeder {
                 for dummy in dummyAccounts {
                     let dummyId = dummy.id
                     context.delete(dummy)
-                    Task {
-                        await SyncEngine.shared.deleteRecordFromCloud(endpoint: "accounts", id: dummyId)
-                    }
                 }
             }
         }

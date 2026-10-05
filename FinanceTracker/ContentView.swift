@@ -67,16 +67,6 @@ struct ContentView: View {
             DataSeeder.deduplicateAndReconcile(context: context)
             selectDefaultLedger()
             RecurringService.processOverdue(context: context)
-
-            // Start Realtime sync and initial sync
-            SyncEngine.shared.startRealtimeSync(context: context)
-            await SyncEngine.shared.syncAll(context: context)
-            DataSeeder.deduplicateAndReconcile(context: context)
-            selectDefaultLedger()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: SyncEngine.didCompleteCloudSyncNotification)) { _ in
-            DataSeeder.deduplicateAndReconcile(context: context)
-            selectDefaultLedger()
         }
         .onChange(of: ledgers) { _, _ in
             selectDefaultLedger()
@@ -116,7 +106,6 @@ struct ContentView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        SyncStatusBadge()
                     }
                     .padding(.vertical, 4)
                 }

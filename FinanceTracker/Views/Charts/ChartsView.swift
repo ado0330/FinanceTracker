@@ -187,9 +187,7 @@ struct ChartsView: View {
                 ToolbarItem(placement: .principal) {
                     LedgerSwitcherView()
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    SyncStatusBadge()
-                }
+
             }
             .sheet(isPresented: $showMonthBreakdownSheet) {
                 let monthTxns = ledgerTransactions.filter {

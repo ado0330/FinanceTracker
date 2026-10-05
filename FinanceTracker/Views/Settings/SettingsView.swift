@@ -46,8 +46,11 @@ struct SettingsView: View {
     @State private var showResetAlert = false
     @State private var showMigrateMYRAlert = false
 
-    // MARK: - Cloud Sync State
-    @State private var syncEngine = SyncEngine.shared
+    // MARK: - Backup State
+    @State private var backupDocument = DatabaseBackupDocument()
+    @State private var showBackupExporter = false
+    @State private var showBackupImporter = false
+    @State private var showBackupSuccessAlert = false
 
     // MARK: - Filtered Transactions
     private var ledgerTransactions: [Transaction] {
@@ -70,7 +73,7 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 appearanceSection
-                cloudSyncSection
+                backupSection
                 ledgerSection
                 accountsSection
                 organizeSection
@@ -142,75 +145,49 @@ struct SettingsView: View {
         }
     }
 
-    // ── 0.5 Real-Time Cloud Sync (iPhone & iPad) ──────────────────────────────
-    private var cloudSyncSection: some View {
+    // ── 0.5 Full Database Backup & Restore ────────────────────────────────────
+    private var backupSection: some View {
         Section(
-            header: Text("Real-Time Cloud Sync (iPhone & iPad)"),
-            footer: Text("Keeps your finances continuously synchronized between iPhone and iPad in real-time.")
+            header: Text("Full Database Backup & Restore"),
+            footer: Text("Export your entire database (including photos, ledgers, accounts, and splitters) to a single file. You can AirDrop this file to another device to overwrite its data.")
         ) {
-            HStack {
-                Label("Status", systemImage: syncEngine.status.iconName)
-                Spacer()
-                Text(syncEngine.status.displayText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            Button {
+                backupDocument = DatabaseBackupDocument()
+                showBackupExporter = true
+            } label: {
+                Label("Export Full Backup", systemImage: "square.and.arrow.up.fill")
             }
-
-            HStack {
-                Label("Cloud Service", systemImage: "bolt.horizontal.icloud.fill")
-                Spacer()
-                Text(syncEngine.isConfigured ? "Connected" : "Disconnected")
-                    .font(.subheadline)
-                    .foregroundStyle(syncEngine.isConfigured ? Color.secondary : Color.red)
-            }
-
-            if AppSecrets.isSupabaseConfiguredLocally {
-                HStack(spacing: 8) {
-                    Image(systemName: "lock.shield.fill")
-                        .foregroundStyle(.green)
-                        .font(.caption)
-                    Text("Auto-configured securely via Secrets.local.plist")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            .fileExporter(
+                isPresented: $showBackupExporter,
+                document: backupDocument,
+                contentType: .ftbackup,
+                defaultFilename: "FinanceTracker_Backup.ftbackup"
+            ) { result in
+                if case .success = result {
+                    print("✅ Backup exported successfully.")
                 }
-                .padding(.vertical, 2)
-            }
-
-            if case .error(let msg) = syncEngine.status {
-                HStack(alignment: .top, spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(.red)
-                        .font(.caption)
-                    Text(msg)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                }
-                .padding(.vertical, 2)
             }
 
             Button {
-                let generator = UIImpactFeedbackGenerator(style: .medium)
-                generator.impactOccurred()
-                Task {
-                    await syncEngine.syncAll(context: modelContext)
-                }
+                showBackupImporter = true
             } label: {
-                HStack {
-                    Spacer()
-                    if syncEngine.isSyncing {
-                        ProgressView()
-                            .padding(.trailing, 6)
-                        Text("Syncing with Cloud...")
-                    } else {
-                        Image(systemName: "arrow.triangle.2.circlepath")
-                        Text("Sync Now")
-                    }
-                    Spacer()
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(syncEngine.isConfigured ? Color.primary : Color.secondary)
+                Label("Import Full Backup", systemImage: "square.and.arrow.down.fill")
+                    .foregroundStyle(.red)
             }
-            .disabled(!syncEngine.isConfigured || syncEngine.isSyncing)
+            .fileImporter(
+                isPresented: $showBackupImporter,
+                allowedContentTypes: [.ftbackup],
+                allowsMultipleSelection: false
+            ) { result in
+                handleBackupImport(result: result)
+            }
+            .alert("Backup Restored Successfully", isPresented: $showBackupSuccessAlert) {
+                Button("Quit App", role: .cancel) {
+                    exit(0)
+                }
+            } message: {
+                Text("The database has been fully overwritten. The app must now exit to reload the data. Please open the app again manually.")
+            }
         }
     }
 
@@ -589,12 +566,41 @@ struct SettingsView: View {
             showImportAlert = true
         }
     }
+    
+    // MARK: - Full Backup Import Handler
+    
+    private func handleBackupImport(result: Result<[URL], Error>) {
+        do {
+            guard let selectedURL = try result.get().first else { return }
+            
+            guard selectedURL.startAccessingSecurityScopedResource() else {
+                importAlertTitle = "Access Denied"
+                importAlertMessage = "Could not access the selected backup file."
+                showImportAlert = true
+                return
+            }
+            defer { selectedURL.stopAccessingSecurityScopedResource() }
+            
+            // Read document
+            let document = try DatabaseBackupDocument(url: selectedURL)
+            
+            // Restore
+            try DatabaseBackupDocument.restore(from: document)
+            
+            // Show Success & Exit App
+            showBackupSuccessAlert = true
+        } catch {
+            importAlertTitle = "Restore Failed"
+            importAlertMessage = error.localizedDescription
+            showImportAlert = true
+        }
+    }
 
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.9.5"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "26"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "27"
         return "v\(version) (Build \(build))"
     }
 }

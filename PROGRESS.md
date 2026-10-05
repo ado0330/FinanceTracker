@@ -359,12 +359,19 @@ FinanceTracker/
 - [x] **SYNC-23**: Diagnosed HTTP 500 error during `syncAll` caused by massive raw camera image payloads encoded as base64 exceeding Supabase PostgREST JSON limits. ← **(DONE)**
 - [x] **SYNC-24**: Implemented on-the-fly image compression in `TransactionDTO.swift`, resizing receipt images to a maximum dimension of 800px and 0.5 JPEG compression before base64 encoding. ← **(DONE)**
 
+### Phase 37 — v1.10.0 Full Database Backup & Restore Architecture
+- [x] **BAK-01**: Abandoned Supabase Real-Time Cloud Sync feature per user request; completely stripped `SyncEngine`, `SyncModels`, `SyncStatusBadge`, and related logic from `ContentView`, `SettingsView`, and transaction views ← **(DONE)**
+- [x] **BAK-02**: Designed `DatabaseBackupDocument.swift` conforming to `FileDocument` with custom `.ftbackup` UTType (declared as an Apple Package format) ← **(DONE)**
+- [x] **BAK-03**: Packaged `default.store`, `default.store-shm`, and `default.store-wal` SQLite files into the `.ftbackup` directory package, allowing users to export the entire 100% fidelity database (including binary photos) as a single portable file ← **(DONE)**
+- [x] **BAK-04**: Integrated `fileExporter` and `fileImporter` in `SettingsView`, allowing 1-click AirDrop export/import across iPhone and iPad to seamlessly overwrite data ← **(DONE)**
+- [x] **BAK-05**: Handled SQLite overwrites and app termination instruction (`exit(0)`) upon successful restore; bumped version to `v1.10.0 (Build 27)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 36 — v1.9.5 Image Payload Compression for Supabase 500 Error Fix (SYNC-23 to SYNC-24 DONE)
+Last Completed : Phase 37 — v1.10.0 Full Database Backup & Restore Architecture (BAK-01 to BAK-05 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -380,4 +387,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.9.4 (Build 25) — Phase 35 Completed & Released — 2026-10-05*
+*Last updated: v1.10.0 (Build 27) — Phase 37 Completed & Released — 2026-10-05*

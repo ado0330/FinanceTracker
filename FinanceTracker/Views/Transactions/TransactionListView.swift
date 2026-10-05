@@ -120,17 +120,13 @@ struct TransactionListView: View {
                     LedgerSwitcherView()
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 8) {
-                        SyncStatusBadge()
-
-                        Button {
-                            editingTransaction = nil
-                            showingAddEdit = true
-                        } label: {
-                            Image(systemName: "plus")
-                        }
-                        .accessibilityIdentifier("addTransactionButton")
+                    Button {
+                        editingTransaction = nil
+                        showingAddEdit = true
+                    } label: {
+                        Image(systemName: "plus")
                     }
+                    .accessibilityIdentifier("addTransactionButton")
                 }
             }
             .sheet(isPresented: $showingAddEdit) {
@@ -558,9 +554,6 @@ struct TransactionListView: View {
             modelContext.delete(txn)
         }
         try? modelContext.save()
-        Task {
-            await SyncEngine.shared.deleteRecordFromCloud(endpoint: "transactions", id: txnId)
-        }
     }
 }
 

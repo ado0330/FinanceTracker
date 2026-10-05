@@ -105,9 +105,7 @@ struct DashboardView: View {
                 ToolbarItem(placement: .principal) {
                     LedgerSwitcherView()
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    SyncStatusBadge()
-                }
+
             }
             .sheet(item: $detailTransaction) { txn in
                 TransactionDetailSheet(transaction: txn) { }
