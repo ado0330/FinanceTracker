@@ -377,10 +377,18 @@ FinanceTracker/
 
 ---
 
+### Phase 39 — v1.10.2 Legacy Folder Cleanup & Atomic Export Fix
+- [x] **BAK-13**: Diagnosed `The file "FinanceTracker_Backup.ftbackup" couldn't be saved in the folder "tmp"` caused by kernel `EISDIR` (Is a directory) when atomic write attempted to overwrite the legacy directory package created in v1.10.0 ← **(DONE)**
+- [x] **BAK-14**: Added proactive `fileManager.removeItem(at: exportURL)` before writing to purge any legacy directories, with fallback non-atomic write and Caches directory secondary fallback ← **(DONE)**
+- [x] **BAK-15**: Added `activeBackupExportURL` dynamic property in `SettingsView.swift` to guarantee `ShareLink` is always populated with a fresh and verified file on disk ← **(DONE)**
+- [x] **BAK-16**: Added unit test `testCreateExportFileOverwritesExistingDirectory()` in `BackupTests.swift`; verified all 47 tests pass; bumped version to `v1.10.2 (Build 29)` ← **(DONE)**
+
+---
+
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 38 — v1.10.1 Direct AirDrop Sharing, Unified File Importer & iPad Touch Responsiveness (BAK-06 to BAK-12 DONE)
+Last Completed : Phase 39 — v1.10.2 Legacy Folder Cleanup & Atomic Export Fix (BAK-13 to BAK-16 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -396,4 +404,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.10.1 (Build 28) — Phase 38 Completed & Released — 2026-10-05*
+*Last updated: v1.10.2 (Build 29) — Phase 39 Completed & Released — 2026-10-05*

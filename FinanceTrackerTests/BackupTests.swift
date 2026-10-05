@@ -41,4 +41,25 @@ final class BackupTests: XCTestCase {
             XCTAssertTrue(FileManager.default.fileExists(atPath: exportURL.path))
         }
     }
+
+    func testCreateExportFileOverwritesExistingDirectory() throws {
+        let tempDir = FileManager.default.temporaryDirectory
+        let exportURL = tempDir.appendingPathComponent("FinanceTracker_Backup.ftbackup")
+        
+        // Simulate a legacy folder package left behind
+        try? FileManager.default.removeItem(at: exportURL)
+        try FileManager.default.createDirectory(at: exportURL, withIntermediateDirectories: true)
+        var isDir: ObjCBool = false
+        XCTAssertTrue(FileManager.default.fileExists(atPath: exportURL.path, isDirectory: &isDir))
+        XCTAssertTrue(isDir.boolValue)
+
+        // createExportFile should safely remove the legacy folder and write the new file
+        let resultURL = DatabaseBackupDocument.createExportFile()
+        XCTAssertNotNil(resultURL)
+        XCTAssertEqual(resultURL?.path, exportURL.path)
+        
+        var isDirAfter: ObjCBool = true
+        XCTAssertTrue(FileManager.default.fileExists(atPath: exportURL.path, isDirectory: &isDirAfter))
+        XCTAssertFalse(isDirAfter.boolValue) // Must be a regular file now, not a directory!
+    }
 }

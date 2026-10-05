@@ -111,14 +111,32 @@ public struct DatabaseBackupDocument: FileDocument {
         
         guard let encoded = try? PropertyListEncoder().encode(archive) else { return nil }
         
-        let tempDir = FileManager.default.temporaryDirectory
+        let fileManager = FileManager.default
+        let tempDir = fileManager.temporaryDirectory
         let exportURL = tempDir.appendingPathComponent("FinanceTracker_Backup.ftbackup")
+        
+        // Remove any legacy directory or previous file that might block writing
+        try? fileManager.removeItem(at: exportURL)
+        
         do {
             try encoded.write(to: exportURL, options: .atomic)
             return exportURL
         } catch {
-            print("❌ Failed to write export file: \(error.localizedDescription)")
-            return nil
+            do {
+                try encoded.write(to: exportURL)
+                return exportURL
+            } catch {
+                // Secondary fallback: Caches directory if tmp is restricted
+                if let caches = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                    let cacheURL = caches.appendingPathComponent("FinanceTracker_Backup.ftbackup")
+                    try? fileManager.removeItem(at: cacheURL)
+                    if (try? encoded.write(to: cacheURL)) != nil {
+                        return cacheURL
+                    }
+                }
+                print("❌ Failed to write export file: \(error.localizedDescription)")
+                return nil
+            }
         }
     }
     

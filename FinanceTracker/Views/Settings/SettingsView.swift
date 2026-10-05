@@ -56,6 +56,13 @@ struct SettingsView: View {
     @State private var backupExportURL: URL? = nil
     @State private var showBackupSuccessAlert = false
 
+    private var activeBackupExportURL: URL? {
+        if let url = backupExportURL, FileManager.default.fileExists(atPath: url.path) {
+            return url
+        }
+        return DatabaseBackupDocument.createExportFile()
+    }
+
     // MARK: - Filtered Transactions
     private var ledgerTransactions: [Transaction] {
         guard let ledger = appState.selectedLedger else { return [] }
@@ -174,7 +181,7 @@ struct SettingsView: View {
             header: Text("Full Database Backup & Restore"),
             footer: Text("Export your entire database (including photos, ledgers, accounts, and splitters) to a single file. You can directly AirDrop this file to another device to overwrite its data.")
         ) {
-            if let url = backupExportURL {
+            if let url = activeBackupExportURL {
                 ShareLink(
                     item: url,
                     preview: SharePreview("FinanceTracker Backup", image: Image(systemName: "archivebox.fill"))
@@ -612,8 +619,8 @@ struct SettingsView: View {
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.1"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "28"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.2"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "29"
         return "v\(version) (Build \(build))"
     }
 }
