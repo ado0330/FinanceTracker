@@ -330,13 +330,14 @@ FinanceTracker/
 - [x] **SEC-03**: Updated `SyncEngine.swift` to automatically fall back to `AppSecrets.supabaseURL` and `AppSecrets.supabaseAnonKey`, allowing devices built from Xcode to automatically connect without manual typing in the app ← **(DONE)**
 - [x] **SEC-04**: Updated `SettingsView.swift` with auto-filling inputs and an `Auto-configured via Secrets.local.plist` visual security shield badge ← **(DONE)**
 - [x] **SEC-05**: Updated `Secrets.example.plist` template with `SUPABASE_URL` and `SUPABASE_ANON_KEY` placeholders; verified all 47 tests pass; bumped version to `v1.9.1 (Build 22)` ← **(DONE)**
+- [x] **SEC-06**: Integrated user's live Supabase instance (`https://pzfntfhkqibfzraakhyb.supabase.co`) into local git-ignored `Secrets.local.plist`; successfully verified live REST communication (`HTTP 200 OK`) and table readiness across both iPhone and iPad ← **(DONE)**
 
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 32 — v1.9.1 Local Secrets Cloud Credentials Protection & Automated Configuration (SEC-02 to SEC-05 DONE)
+Last Completed : Phase 32 — v1.9.1 Local Secrets Cloud Credentials Protection & Automated Configuration (SEC-02 to SEC-06 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
