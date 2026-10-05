@@ -84,6 +84,14 @@ struct SettingsView: View {
                 aboutSection
             }
             .navigationTitle("Settings")
+            .onAppear {
+                if supabaseUrlInput.isEmpty && !syncEngine.supabaseURL.isEmpty {
+                    supabaseUrlInput = syncEngine.supabaseURL
+                }
+                if supabaseKeyInput.isEmpty && !syncEngine.supabaseAnonKey.isEmpty {
+                    supabaseKeyInput = syncEngine.supabaseAnonKey
+                }
+            }
             .sheet(isPresented: $showSyncSetupSheet) {
                 NavigationStack {
                     ScrollView {
@@ -228,6 +236,18 @@ struct SettingsView: View {
                     }
             }
             .padding(.vertical, 2)
+
+            if AppSecrets.isSupabaseConfiguredLocally {
+                HStack(spacing: 6) {
+                    Image(systemName: "lock.shield.fill")
+                        .foregroundStyle(.green)
+                        .font(.caption)
+                    Text("Auto-configured via Secrets.local.plist")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 2)
+            }
 
             Button {
                 let generator = UIImpactFeedbackGenerator(style: .medium)
@@ -662,8 +682,8 @@ struct SettingsView: View {
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.9.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "21"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.9.1"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "22"
         return "v\(version) (Build \(build))"
     }
 }

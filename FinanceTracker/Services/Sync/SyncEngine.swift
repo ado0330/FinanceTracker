@@ -58,7 +58,11 @@ public final class SyncEngine {
     private let keyKey = "supabase_anon_key"
 
     public var supabaseURL: String {
-        get { UserDefaults.standard.string(forKey: urlKey) ?? "" }
+        get {
+            let saved = UserDefaults.standard.string(forKey: urlKey) ?? ""
+            if !saved.isEmpty { return saved }
+            return AppSecrets.supabaseURL
+        }
         set {
             UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: urlKey)
             updateConfigurationState()
@@ -66,7 +70,11 @@ public final class SyncEngine {
     }
 
     public var supabaseAnonKey: String {
-        get { UserDefaults.standard.string(forKey: keyKey) ?? "" }
+        get {
+            let saved = UserDefaults.standard.string(forKey: keyKey) ?? ""
+            if !saved.isEmpty { return saved }
+            return AppSecrets.supabaseAnonKey
+        }
         set {
             UserDefaults.standard.set(newValue.trimmingCharacters(in: .whitespacesAndNewlines), forKey: keyKey)
             updateConfigurationState()

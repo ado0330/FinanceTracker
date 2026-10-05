@@ -325,12 +325,18 @@ FinanceTracker/
 - [x] **SYNC-04**: Added dedicated Real-Time Cloud Sync section in `SettingsView.swift` with live connection status, custom Supabase URL and Anon Key inputs, manual "Sync Now" button, and interactive 2-minute setup guide modal ← **(DONE)**
 - [x] **SYNC-05**: Added comprehensive automated unit tests in `SyncTests.swift`; verified all 47 tests pass on both iPhone 17 and iPad Air 11-inch (M4) simulators (47/47 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.0 (Build 21)` ← **(DONE)**
 
+### Phase 32 — v1.9.1 Local Secrets Cloud Credentials Protection & Automated Configuration
+- [x] **SEC-02**: Extended `AppSecrets.swift` to securely resolve `SUPABASE_URL` and `SUPABASE_ANON_KEY` from git-ignored `Secrets.local.plist` and environment variables with zero risk of git leakage ← **(DONE)**
+- [x] **SEC-03**: Updated `SyncEngine.swift` to automatically fall back to `AppSecrets.supabaseURL` and `AppSecrets.supabaseAnonKey`, allowing devices built from Xcode to automatically connect without manual typing in the app ← **(DONE)**
+- [x] **SEC-04**: Updated `SettingsView.swift` with auto-filling inputs and an `Auto-configured via Secrets.local.plist` visual security shield badge ← **(DONE)**
+- [x] **SEC-05**: Updated `Secrets.example.plist` template with `SUPABASE_URL` and `SUPABASE_ANON_KEY` placeholders; verified all 47 tests pass; bumped version to `v1.9.1 (Build 22)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 31 — v1.9.0 iPad Native Adaptation & Cross-Device Real-time Cloud Synchronization (PAD-01 to PAD-03, SYNC-01 to SYNC-05 DONE)
+Last Completed : Phase 32 — v1.9.1 Local Secrets Cloud Credentials Protection & Automated Configuration (SEC-02 to SEC-05 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -346,4 +352,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.9.0 (Build 21) — Phase 31 Completed & Released — 2026-10-05*
+*Last updated: v1.9.1 (Build 22) — Phase 32 Completed & Released — 2026-10-05*
