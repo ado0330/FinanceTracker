@@ -106,4 +106,27 @@ final class SyncTests: XCTestCase {
         XCTAssertEqual(SyncEngine.SyncStatus.offline.displayText, "Offline")
         XCTAssertEqual(SyncEngine.SyncStatus.offline.iconName, "wifi.slash")
     }
+
+    func testAccountAndBudgetDTOSerialization() throws {
+        let account = Account(name: "Maybank Checking", institution: "Maybank", accountNumberLast4: "5678", initialBalance: 2500.0)
+        context.insert(account)
+        try context.save()
+
+        let accDTO = AccountDTO(from: account)
+        XCTAssertEqual(accDTO.id, account.id)
+        XCTAssertEqual(accDTO.name, "Maybank Checking")
+        XCTAssertEqual(accDTO.last_four, "5678")
+        XCTAssertEqual(accDTO.starting_balance, 2500.0)
+
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        let accData = try encoder.encode(accDTO)
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decodedAcc = try decoder.decode(AccountDTO.self, from: accData)
+        XCTAssertEqual(decodedAcc.id, account.id)
+        XCTAssertEqual(decodedAcc.last_four, "5678")
+        XCTAssertEqual(decodedAcc.starting_balance, 2500.0)
+    }
 }

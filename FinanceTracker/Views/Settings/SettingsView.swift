@@ -48,9 +48,6 @@ struct SettingsView: View {
 
     // MARK: - Cloud Sync State
     @State private var syncEngine = SyncEngine.shared
-    @State private var supabaseUrlInput: String = SyncEngine.shared.supabaseURL
-    @State private var supabaseKeyInput: String = SyncEngine.shared.supabaseAnonKey
-    @State private var showSyncSetupSheet: Bool = false
 
     // MARK: - Filtered Transactions
     private var ledgerTransactions: [Transaction] {
@@ -84,58 +81,6 @@ struct SettingsView: View {
                 aboutSection
             }
             .navigationTitle("Settings")
-            .onAppear {
-                if supabaseUrlInput.isEmpty && !syncEngine.supabaseURL.isEmpty {
-                    supabaseUrlInput = syncEngine.supabaseURL
-                }
-                if supabaseKeyInput.isEmpty && !syncEngine.supabaseAnonKey.isEmpty {
-                    supabaseKeyInput = syncEngine.supabaseAnonKey
-                }
-            }
-            .sheet(isPresented: $showSyncSetupSheet) {
-                NavigationStack {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Setup Free iPhone & iPad Sync in 2 Minutes")
-                                .font(.title3.weight(.bold))
-                                .foregroundStyle(.primary)
-
-                            Text("FinanceTracker syncs seamlessly between your iPhone and iPad using Supabase's free PostgreSQL database and Realtime WebSocket channels.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-
-                            VStack(alignment: .leading, spacing: 14) {
-                                stepRow(number: "1", title: "Create Free Project", description: "Sign in to supabase.com and create a new project with the free tier.")
-                                stepRow(number: "2", title: "Execute Database Schema", description: "Go to SQL Editor in your Supabase dashboard, copy the contents of supabase_schema.sql from the project root, and click Run.")
-                                stepRow(number: "3", title: "Copy API Credentials", description: "In Project Settings → API, copy your Project URL and anon public key. Paste them into this screen on both your iPhone and iPad.")
-                            }
-                            .padding(.vertical, 4)
-
-                            HStack(alignment: .top, spacing: 10) {
-                                Image(systemName: "checkmark.seal.fill")
-                                    .foregroundStyle(.green)
-                                Text("Offline-First: All transactions remain saved locally in SwiftData. Changes sync automatically in under 0.5s when online.")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(12)
-                            .background(Color.primary.opacity(0.04))
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .padding(20)
-                    }
-                    .navigationTitle("Sync Setup Guide")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Done") {
-                                showSyncSetupSheet = false
-                            }
-                            .font(.subheadline.bold())
-                        }
-                    }
-                }
-            }
             .fileImporter(
                 isPresented: $showFileImporter,
                 allowedContentTypes: [.commaSeparatedText, .plainText],
@@ -201,7 +146,7 @@ struct SettingsView: View {
     private var cloudSyncSection: some View {
         Section(
             header: Text("Real-Time Cloud Sync (iPhone & iPad)"),
-            footer: Text("Keep your finances in real-time sync across iPhone and iPad using a free Supabase database. Run supabase_schema.sql once in Supabase SQL Editor.")
+            footer: Text("Keeps your finances continuously synchronized between iPhone and iPad in real-time.")
         ) {
             HStack {
                 Label("Status", systemImage: syncEngine.status.iconName)
@@ -211,40 +156,34 @@ struct SettingsView: View {
                     .foregroundStyle(.secondary)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Project URL")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                TextField("https://xyz.supabase.co", text: $supabaseUrlInput)
-                    .textInputAutocapitalization(.never)
-                    .autocorrectionDisabled(true)
+            HStack {
+                Label("Cloud Service", systemImage: "bolt.horizontal.icloud.fill")
+                Spacer()
+                Text(syncEngine.isConfigured ? "Connected" : "Disconnected")
                     .font(.subheadline)
-                    .onChange(of: supabaseUrlInput) { _, newValue in
-                        syncEngine.supabaseURL = newValue
-                    }
+                    .foregroundStyle(syncEngine.isConfigured ? Color.secondary : Color.red)
             }
-            .padding(.vertical, 2)
-
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Anon Public Key")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                SecureField("eyJhbGciOi...", text: $supabaseKeyInput)
-                    .font(.subheadline)
-                    .onChange(of: supabaseKeyInput) { _, newValue in
-                        syncEngine.supabaseAnonKey = newValue
-                    }
-            }
-            .padding(.vertical, 2)
 
             if AppSecrets.isSupabaseConfiguredLocally {
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Image(systemName: "lock.shield.fill")
                         .foregroundStyle(.green)
                         .font(.caption)
-                    Text("Auto-configured via Secrets.local.plist")
+                    Text("Auto-configured securely via Secrets.local.plist")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+                .padding(.vertical, 2)
+            }
+
+            if case .error(let msg) = syncEngine.status {
+                HStack(alignment: .top, spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.red)
+                        .font(.caption)
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundStyle(.red)
                 }
                 .padding(.vertical, 2)
             }
@@ -272,34 +211,6 @@ struct SettingsView: View {
                 .foregroundStyle(syncEngine.isConfigured ? Color.primary : Color.secondary)
             }
             .disabled(!syncEngine.isConfigured || syncEngine.isSyncing)
-
-            Button {
-                showSyncSetupSheet = true
-            } label: {
-                Label("How to Setup Free Database", systemImage: "questionmark.circle")
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-            }
-        }
-    }
-
-    private func stepRow(number: String, title: String, description: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(number)
-                .font(.caption.bold())
-                .foregroundStyle(Color(uiColor: .systemBackground))
-                .frame(width: 24, height: 24)
-                .background(Color.primary)
-                .clipShape(Circle())
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                Text(description)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 
@@ -682,8 +593,8 @@ struct SettingsView: View {
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.9.1"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "22"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.9.2"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "23"
         return "v\(version) (Build \(build))"
     }
 }

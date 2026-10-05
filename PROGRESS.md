@@ -332,12 +332,19 @@ FinanceTracker/
 - [x] **SEC-05**: Updated `Secrets.example.plist` template with `SUPABASE_URL` and `SUPABASE_ANON_KEY` placeholders; verified all 47 tests pass; bumped version to `v1.9.1 (Build 22)` ← **(DONE)**
 - [x] **SEC-06**: Integrated user's live Supabase instance (`https://pzfntfhkqibfzraakhyb.supabase.co`) into local git-ignored `Secrets.local.plist`; successfully verified live REST communication (`HTTP 200 OK`) and table readiness across both iPhone and iPad ← **(DONE)**
 
+### Phase 33 — v1.9.2 Cloud Sync Schema Alignment & Secure UI Streamlining
+- [x] **SYNC-06**: Diagnosed `HTTP 400 pushing to accounts` caused by column naming discrepancies between Swift DTOs and Supabase PostgreSQL schema (`account_number_last4` vs `last_four`, `initial_balance` vs `starting_balance`) ← **(DONE)**
+- [x] **SYNC-07**: Aligned all DTO models in `SyncModels.swift` (`AccountDTO`, `BudgetDTO`, `RecurringRuleDTO`) to match database columns with zero schema mismatch and verified live REST inserts/deletes ← **(DONE)**
+- [x] **SYNC-08**: Enhanced `SyncEngine.swift` error diagnostics to log exact PostgreSQL response bodies on upsert failures ← **(DONE)**
+- [x] **SYNC-09**: Streamlined `SettingsView.swift` by completely disabling/removing the raw Project URL and Anon Public Key inputs, preventing technical database credentials from being exposed to the user while maintaining seamless background auto-sync via `Secrets.local.plist` ← **(DONE)**
+- [x] **SYNC-10**: Added `testAccountAndBudgetDTOSerialization()` in `SyncTests.swift`; verified all 48 tests pass (48/48 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.2 (Build 23)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 32 — v1.9.1 Local Secrets Cloud Credentials Protection & Automated Configuration (SEC-02 to SEC-06 DONE)
+Last Completed : Phase 33 — v1.9.2 Cloud Sync Schema Alignment & Secure UI Streamlining (SYNC-06 to SYNC-10 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -353,4 +360,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.9.1 (Build 22) — Phase 32 Completed & Released — 2026-10-05*
+*Last updated: v1.9.2 (Build 23) — Phase 33 Completed & Released — 2026-10-05*

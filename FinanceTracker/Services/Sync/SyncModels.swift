@@ -54,14 +54,10 @@ public struct AccountDTO: Codable, Identifiable {
     public let name: String
     public let institution: String
     public let account_type: String
-    public let account_number_last4: String
-    public let initial_balance: Double
-    public let currency: String
+    public let last_four: String
     public let color_hex: String
     public let icon: String
-    public let is_archived: Bool
-    public let is_default: Bool
-    public let note: String
+    public let starting_balance: Double
     public let created_at: Date
     public let updated_at: Date
     public let deleted_at: Date?
@@ -71,14 +67,10 @@ public struct AccountDTO: Codable, Identifiable {
         self.name = account.name
         self.institution = account.institution
         self.account_type = account.accountTypeRaw
-        self.account_number_last4 = account.accountNumberLast4
-        self.initial_balance = account.initialBalance
-        self.currency = account.currency
+        self.last_four = account.accountNumberLast4
         self.color_hex = account.colorHex
         self.icon = account.icon
-        self.is_archived = account.isArchived
-        self.is_default = account.isDefault
-        self.note = account.note
+        self.starting_balance = account.initialBalance
         self.created_at = account.createdAt
         self.updated_at = .now
         self.deleted_at = deletedAt
@@ -121,8 +113,7 @@ public struct BudgetDTO: Codable, Identifiable {
     public let id: UUID
     public let amount: Double
     public let period: String
-    public let start_date: Date
-    public let is_active: Bool
+    public let alert_threshold: Double
     public let category_id: UUID?
     public let ledger_id: UUID?
     public let created_at: Date
@@ -133,8 +124,7 @@ public struct BudgetDTO: Codable, Identifiable {
         self.id = budget.id
         self.amount = budget.amount
         self.period = budget.period.rawValue
-        self.start_date = budget.startDate
-        self.is_active = budget.isActive
+        self.alert_threshold = 0.8
         self.category_id = budget.category?.id
         self.ledger_id = budget.ledger?.id
         self.created_at = budget.createdAt
@@ -149,9 +139,8 @@ public struct RecurringRuleDTO: Codable, Identifiable {
     public let type: String
     public let note: String
     public let frequency: String
-    public let start_date: Date
+    public let interval_value: Int
     public let next_due_date: Date
-    public let end_date: Date?
     public let is_active: Bool
     public let category_id: UUID?
     public let ledger_id: UUID?
@@ -165,9 +154,8 @@ public struct RecurringRuleDTO: Codable, Identifiable {
         self.type = rule.type.rawValue
         self.note = rule.note
         self.frequency = rule.frequency.rawValue
-        self.start_date = rule.startDate
+        self.interval_value = 1
         self.next_due_date = rule.nextDueDate
-        self.end_date = rule.endDate
         self.is_active = rule.isActive
         self.category_id = rule.category?.id
         self.ledger_id = rule.ledger?.id

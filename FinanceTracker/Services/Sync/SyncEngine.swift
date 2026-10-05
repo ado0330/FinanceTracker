@@ -210,8 +210,10 @@ public final class SyncEngine {
         request.setValue("resolution=merge-duplicates", forHTTPHeaderField: "Prefer")
         request.httpBody = try jsonEncoder.encode(body)
 
-        let (_, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await URLSession.shared.data(for: request)
         if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? ""
+            print("❌ SyncEngine upsertRecord failed [\(endpoint)] HTTP \(http.statusCode): \(errorBody)")
             throw NSError(domain: "SyncEngine", code: http.statusCode, userInfo: [NSLocalizedDescriptionKey: "HTTP \(http.statusCode) pushing to \(endpoint)"])
         }
     }
@@ -264,28 +266,20 @@ public final class SyncEngine {
                     local.name = remote.name
                     local.institution = remote.institution
                     local.accountTypeRaw = remote.account_type
-                    local.accountNumberLast4 = remote.account_number_last4
+                    local.accountNumberLast4 = remote.last_four
                     local.colorHex = remote.color_hex
                     local.icon = remote.icon
-                    local.initialBalance = remote.initial_balance
-                    local.currency = remote.currency
-                    local.isArchived = remote.is_archived
-                    local.isDefault = remote.is_default
-                    local.note = remote.note
+                    local.initialBalance = remote.starting_balance
                 } else if remote.deleted_at == nil {
                     let accType = AccountType(rawValue: remote.account_type) ?? .bank
                     let newAcc = Account(
                         name: remote.name,
                         institution: remote.institution,
                         accountType: accType,
-                        accountNumberLast4: remote.account_number_last4,
-                        initialBalance: remote.initial_balance,
-                        currency: remote.currency,
+                        accountNumberLast4: remote.last_four,
+                        initialBalance: remote.starting_balance,
                         colorHex: remote.color_hex,
-                        icon: remote.icon,
-                        isArchived: remote.is_archived,
-                        isDefault: remote.is_default,
-                        note: remote.note
+                        icon: remote.icon
                     )
                     newAcc.id = remote.id
                     context.insert(newAcc)
