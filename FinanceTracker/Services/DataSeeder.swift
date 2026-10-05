@@ -16,7 +16,7 @@ struct DataSeeder {
             return
         }
 
-        // Default ledger
+        // Default ledger with canonical cross-device cloud UUID
         let personal = Ledger(
             name:      "Personal",
             icon:      "person.fill",
@@ -24,6 +24,9 @@ struct DataSeeder {
             currency:  "MYR",
             isDefault: true
         )
+        if let canonicalID = UUID(uuidString: "e598a7f2-415d-43f9-9127-f857a6032381") {
+            personal.id = canonicalID
+        }
         context.insert(personal)
 
         // System expense categories
@@ -148,17 +151,23 @@ struct DataSeeder {
     // MARK: - Deduplication & Cloud Reconciliation
 
     static func deduplicateAndReconcile(context: ModelContext) {
+        let txDescriptor = FetchDescriptor<Transaction>()
+        let allTx = (try? context.fetch(txDescriptor)) ?? []
+        let ledgerIdsWithTx = Set(allTx.compactMap { $0.ledger?.id })
+
         // 1. Reconcile Ledgers: keep the one with transactions, delete empty duplicates
         let ledgerDescriptor = FetchDescriptor<Ledger>()
         if let allLedgers = try? context.fetch(ledgerDescriptor) {
             let grouped = Dictionary(grouping: allLedgers, by: { $0.name.lowercased() })
             for (_, group) in grouped where group.count > 1 {
-                guard let primary = group.first(where: { !$0.transactions.isEmpty })
+                guard let primary = group.first(where: { ledgerIdsWithTx.contains($0.id) })
+                    ?? group.first(where: { $0.id == UUID(uuidString: "e598a7f2-415d-43f9-9127-f857a6032381") })
                     ?? group.first(where: { $0.isDefault })
                     ?? group.first else { continue }
 
                 for duplicate in group where duplicate.id != primary.id {
-                    for tx in duplicate.transactions {
+                    let dupId = duplicate.id
+                    for tx in allTx where tx.ledger?.id == dupId {
                         tx.ledger = primary
                     }
                     duplicate.transactions.removeAll()
@@ -174,6 +183,10 @@ struct DataSeeder {
                     duplicate.recurringRules.removeAll()
 
                     context.delete(duplicate)
+
+                    Task {
+                        await SyncEngine.shared.deleteRecordFromCloud(endpoint: "ledgers", id: dupId)
+                    }
                 }
             }
         }
@@ -189,7 +202,11 @@ struct DataSeeder {
                     $0.name == "Main Checking" && $0.initialBalance == 0 && $0.transactions.isEmpty
                 }
                 for dummy in dummyAccounts {
+                    let dummyId = dummy.id
                     context.delete(dummy)
+                    Task {
+                        await SyncEngine.shared.deleteRecordFromCloud(endpoint: "accounts", id: dummyId)
+                    }
                 }
             }
         }
@@ -222,14 +239,14 @@ struct DataSeeder {
         }
 
         // 4. Ensure no orphaned transactions without a ledger
-        let txDescriptor = FetchDescriptor<Transaction>()
-        if let allTx = try? context.fetch(txDescriptor) {
-            let allLedgers = (try? context.fetch(ledgerDescriptor)) ?? []
-            if let defaultLedger = allLedgers.first(where: { !$0.transactions.isEmpty })
+        if let allLedgers = try? context.fetch(ledgerDescriptor) {
+            let primaryLedger = allLedgers.first(where: { ledgerIdsWithTx.contains($0.id) })
+                ?? allLedgers.first(where: { $0.id == UUID(uuidString: "e598a7f2-415d-43f9-9127-f857a6032381") })
                 ?? allLedgers.first(where: { $0.isDefault })
-                ?? allLedgers.first {
-                for tx in allTx where tx.ledger == nil {
-                    tx.ledger = defaultLedger
+                ?? allLedgers.first
+            if let primary = primaryLedger {
+                for tx in allTx where tx.ledger == nil || tx.ledger?.name.lowercased() == primary.name.lowercased() {
+                    tx.ledger = primary
                 }
             }
         }

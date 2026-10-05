@@ -348,12 +348,19 @@ FinanceTracker/
 - [x] **SYNC-16**: Updated view filters across `DashboardView`, `TransactionListView`, `ChartsView`, `SpendingDonutChart`, and `TrendLineChart` to include fallback for transactions with nil ledger references ← **(DONE)**
 - [x] **SYNC-17**: Added `testDeduplicateAndReconcile()` in `SyncTests.swift`; verified all 49 tests pass (49/49 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.3 (Build 24)` ← **(DONE)**
 
+### Phase 35 — v1.9.4 Pull-First Sync Architecture, Canonical Ledger Seeding & Remote Deduplication
+- [x] **SYNC-18**: Discovered root cause of sync inconsistency: `SyncEngine.syncAll` previously pushed local changes *before* pulling remote changes, causing fresh devices (iPad) to push newly seeded blank ledgers to Supabase before downloading the real iPhone ledger ← **(DONE)**
+- [x] **SYNC-19**: Re-ordered `syncAll` to strict **Pull-First** architecture: (1) Pull latest remote changes, (2) Deduplicate and reconcile ledgers locally, (3) Push verified local modifications only ← **(DONE)**
+- [x] **SYNC-20**: Assigned canonical shared UUID (`e598a7f2-415d-43f9-9127-f857a6032381`) to default "Personal" ledger in `DataSeeder.seedIfNeeded`, guaranteeing that any new device seeding locally aligns with the cloud ledger without generating duplicate UUIDs ← **(DONE)**
+- [x] **SYNC-21**: Upgraded `selectDefaultLedger()` in `ContentView.swift` to directly query transaction records rather than relying on lazy SwiftData relationship faults, guaranteeing instantaneous selection of the active synced ledger ← **(DONE)**
+- [x] **SYNC-22**: Automatically deleted remote duplicate ledgers and placeholder accounts from Supabase; verified all 49 automated unit tests pass (49/49 passed); guaranteed 100% English UI; bumped version to `v1.9.4 (Build 25)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 34 — v1.9.3 Multi-Device Ledger Reconciliation & Auto-Selection of Synced Transactions (SYNC-11 to SYNC-17 DONE)
+Last Completed : Phase 35 — v1.9.4 Pull-First Sync Architecture, Canonical Ledger Seeding & Remote Deduplication (SYNC-18 to SYNC-22 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -369,4 +376,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.9.3 (Build 24) — Phase 34 Completed & Released — 2026-10-05*
+*Last updated: v1.9.4 (Build 25) — Phase 35 Completed & Released — 2026-10-05*

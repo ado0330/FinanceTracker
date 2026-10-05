@@ -155,4 +155,15 @@ final class SyncTests: XCTestCase {
         XCTAssertEqual(afterLedgers.first?.id, activeLedger.id)
         XCTAssertEqual(afterLedgers.first?.transactions.count, 1)
     }
+
+    func testAssignedUUIDPersistence() throws {
+        let remoteID = UUID(uuidString: "e598a7f2-415d-43f9-9127-f857a6032381")!
+        let ledger = Ledger(name: "Test")
+        ledger.id = remoteID
+        context.insert(ledger)
+        try context.save()
+
+        let fetched = try context.fetch(FetchDescriptor<Ledger>())
+        XCTAssertEqual(fetched.first?.id, remoteID)
+    }
 }

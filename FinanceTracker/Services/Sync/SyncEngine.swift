@@ -133,14 +133,14 @@ public final class SyncEngine {
         status = .syncing
 
         do {
-            // 1. Push local changes
-            try await pushLocalChanges(context: context)
-
-            // 2. Pull remote changes
+            // 1. Pull remote changes FIRST
             try await pullRemoteChanges(context: context)
 
-            // 3. Deduplicate and reconcile ledgers, categories, and accounts
+            // 2. Deduplicate and reconcile ledgers, categories, and accounts
             DataSeeder.deduplicateAndReconcile(context: context)
+
+            // 3. Push local changes
+            try await pushLocalChanges(context: context)
 
             let now = Date.now
             lastSyncedAt = now
@@ -149,6 +149,7 @@ public final class SyncEngine {
 
             NotificationCenter.default.post(name: SyncEngine.didCompleteCloudSyncNotification, object: nil)
         } catch {
+            print("❌ SyncEngine syncAll failed: \(error)")
             status = .error(error.localizedDescription)
             isSyncing = false
         }
@@ -329,7 +330,7 @@ public final class SyncEngine {
                 } else if remote.deleted_at == nil {
                     let matchedCategory = allCategories.first(where: { $0.id == remote.category_id })
                     let matchedLedger = allLedgers.first(where: { $0.id == remote.ledger_id })
-                        ?? allLedgers.first(where: { !$0.transactions.isEmpty })
+                        ?? allLedgers.first(where: { $0.name.lowercased() == "personal" })
                         ?? allLedgers.first(where: { $0.isDefault })
                         ?? allLedgers.first
                     let matchedAccount = allAccounts.first(where: { $0.id == remote.account_id })

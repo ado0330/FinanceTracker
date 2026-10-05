@@ -263,18 +263,25 @@ struct ContentView: View {
     }
 
     private func selectDefaultLedger() {
-        // If current selection is still in ledgers and has transactions, keep it
+        let allTx = (try? context.fetch(FetchDescriptor<Transaction>())) ?? []
+        let ledgerIdsWithTx = Set(allTx.compactMap { $0.ledger?.id })
+
+        // 1. If current selection is still in ledgers and has transactions, keep it
         if let current = appState.selectedLedger,
            let fresh = ledgers.first(where: { $0.id == current.id }),
-           !fresh.transactions.isEmpty {
+           ledgerIdsWithTx.contains(fresh.id) {
             appState.selectedLedger = fresh
             return
         }
 
-        // Prefer ledger that contains transactions, then default, then first available
-        if let ledgerWithTx = ledgers.first(where: { !$0.transactions.isEmpty }) {
+        // 2. Prefer ledger that actually contains transactions
+        if let ledgerWithTx = ledgers.first(where: { ledgerIdsWithTx.contains($0.id) }) {
             appState.selectedLedger = ledgerWithTx
-        } else if let defaultLedger = ledgers.first(where: { $0.isDefault }) {
+            return
+        }
+
+        // 3. Fallback to default or first
+        if let defaultLedger = ledgers.first(where: { $0.isDefault }) {
             appState.selectedLedger = defaultLedger
         } else {
             appState.selectedLedger = ledgers.first
