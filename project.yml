@@ -11,8 +11,8 @@ settings:
     SWIFT_VERSION: "5.10"
     DEVELOPMENT_TEAM: ""          # Leave blank for free account / local signing
     CODE_SIGN_STYLE: Automatic
-    MARKETING_VERSION: "1.10.0"
-    CURRENT_PROJECT_VERSION: "27"
+    MARKETING_VERSION: "1.10.1"
+    CURRENT_PROJECT_VERSION: "28"
     INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
     INFOPLIST_KEY_UILaunchScreen_Generation: YES
 
@@ -66,11 +66,18 @@ targets:
         NSCameraUsageDescription: "FinanceTracker uses the camera to scan and itemize receipts for splitting expenses."
         NSPhotoLibraryUsageDescription: "FinanceTracker needs photo library access to automatically detect and scan receipt screenshots for bookkeeping."
         NSUserNotificationsUsageDescription: "FinanceTracker needs notifications to alert you when you exceed a budget."
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: "FinanceTracker Backup"
+            CFBundleTypeRole: Editor
+            LSHandlerRank: Owner
+            LSItemContentTypes:
+              - "com.local.FinanceTracker.ftbackup"
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: "com.local.FinanceTracker.ftbackup"
             UTTypeDescription: "FinanceTracker Backup File"
             UTTypeConformsTo:
-              - "com.apple.package"
+              - "public.data"
+              - "public.content"
             UTTypeTagSpecification:
               public.filename-extension:
                 - "ftbackup"

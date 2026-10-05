@@ -38,8 +38,14 @@ struct SettingsView: View {
     }()
 
 
+    // MARK: - Import / Export Target
+    enum SettingsImportTarget {
+        case csv
+        case backup
+    }
+
     // MARK: - Data Management State
-    @State private var showFileImporter = false
+    @State private var activeImportTarget: SettingsImportTarget? = nil
     @State private var importAlertTitle = ""
     @State private var importAlertMessage = ""
     @State private var showImportAlert = false
@@ -47,9 +53,7 @@ struct SettingsView: View {
     @State private var showMigrateMYRAlert = false
 
     // MARK: - Backup State
-    @State private var backupDocument = DatabaseBackupDocument()
-    @State private var showBackupExporter = false
-    @State private var showBackupImporter = false
+    @State private var backupExportURL: URL? = nil
     @State private var showBackupSuccessAlert = false
 
     // MARK: - Filtered Transactions
@@ -85,11 +89,29 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings")
             .fileImporter(
-                isPresented: $showFileImporter,
-                allowedContentTypes: [.commaSeparatedText, .plainText],
+                isPresented: Binding(
+                    get: { activeImportTarget != nil },
+                    set: { if !$0 { activeImportTarget = nil } }
+                ),
+                allowedContentTypes: activeImportTarget == .backup
+                    ? [.ftbackup, .data, .item]
+                    : [.commaSeparatedText, .plainText],
                 allowsMultipleSelection: false
             ) { result in
-                handleCSVImport(result: result)
+                let target = activeImportTarget
+                activeImportTarget = nil
+                if target == .backup {
+                    handleBackupImport(result: result)
+                } else if target == .csv {
+                    handleCSVImport(result: result)
+                }
+            }
+            .alert("Backup Restored Successfully", isPresented: $showBackupSuccessAlert) {
+                Button("Quit App", role: .cancel) {
+                    exit(0)
+                }
+            } message: {
+                Text("The database has been fully overwritten. The app must now exit to reload the data. Please open the app again manually.")
             }
             .alert(importAlertTitle, isPresented: $showImportAlert) {
                 Button("OK", role: .cancel) {}
@@ -123,6 +145,7 @@ struct SettingsView: View {
             }
             .onAppear {
                 syncReminderDateFromStorage()
+                backupExportURL = DatabaseBackupDocument.createExportFile()
             }
         }
     }
@@ -149,45 +172,34 @@ struct SettingsView: View {
     private var backupSection: some View {
         Section(
             header: Text("Full Database Backup & Restore"),
-            footer: Text("Export your entire database (including photos, ledgers, accounts, and splitters) to a single file. You can AirDrop this file to another device to overwrite its data.")
+            footer: Text("Export your entire database (including photos, ledgers, accounts, and splitters) to a single file. You can directly AirDrop this file to another device to overwrite its data.")
         ) {
-            Button {
-                backupDocument = DatabaseBackupDocument()
-                showBackupExporter = true
-            } label: {
-                Label("Export Full Backup", systemImage: "square.and.arrow.up.fill")
-            }
-            .fileExporter(
-                isPresented: $showBackupExporter,
-                document: backupDocument,
-                contentType: .ftbackup,
-                defaultFilename: "FinanceTracker_Backup.ftbackup"
-            ) { result in
-                if case .success = result {
-                    print("✅ Backup exported successfully.")
+            if let url = backupExportURL {
+                ShareLink(
+                    item: url,
+                    preview: SharePreview("FinanceTracker Backup", image: Image(systemName: "archivebox.fill"))
+                ) {
+                    Label("Export Full Backup (AirDrop / Share)", systemImage: "square.and.arrow.up.fill")
                 }
+                .buttonStyle(.borderless)
+                .accessibilityIdentifier("exportBackupButton")
+            } else {
+                Button {
+                    backupExportURL = DatabaseBackupDocument.createExportFile()
+                } label: {
+                    Label("Prepare Backup File", systemImage: "arrow.triangle.2.circlepath")
+                }
+                .buttonStyle(.borderless)
             }
 
             Button {
-                showBackupImporter = true
+                activeImportTarget = .backup
             } label: {
                 Label("Import Full Backup", systemImage: "square.and.arrow.down.fill")
                     .foregroundStyle(.red)
             }
-            .fileImporter(
-                isPresented: $showBackupImporter,
-                allowedContentTypes: [.ftbackup],
-                allowsMultipleSelection: false
-            ) { result in
-                handleBackupImport(result: result)
-            }
-            .alert("Backup Restored Successfully", isPresented: $showBackupSuccessAlert) {
-                Button("Quit App", role: .cancel) {
-                    exit(0)
-                }
-            } message: {
-                Text("The database has been fully overwritten. The app must now exit to reload the data. Please open the app again manually.")
-            }
+            .buttonStyle(.borderless)
+            .accessibilityIdentifier("importBackupButton")
         }
     }
 
@@ -453,10 +465,11 @@ struct SettingsView: View {
             }
 
             Button {
-                showFileImporter = true
+                activeImportTarget = .csv
             } label: {
                 Label("Import Transactions (CSV)", systemImage: "square.and.arrow.down")
             }
+            .buttonStyle(.borderless)
             .accessibilityIdentifier("importCSVButton")
 
             Button(role: .destructive) {
@@ -599,8 +612,8 @@ struct SettingsView: View {
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "27"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.1"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "28"
         return "v\(version) (Build \(build))"
     }
 }

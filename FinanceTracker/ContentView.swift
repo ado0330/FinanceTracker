@@ -30,6 +30,11 @@ struct ContentView: View {
         }
     }
 
+    // MARK: - AirDrop Incoming Backup State
+    @State private var pendingAirDropBackupURL: URL? = nil
+    @State private var showAirDropRestoreAlert = false
+    @State private var showAirDropSuccessAlert = false
+
     // MARK: - Body
 
     var body: some View {
@@ -53,6 +58,25 @@ struct ContentView: View {
         }
         .sheet(isPresented: $appState.showBackTapScanner) {
             BackTapQuickScanView()
+        }
+        .alert("Restore Backup from AirDrop?", isPresented: $showAirDropRestoreAlert) {
+            Button("Cancel", role: .cancel) {
+                pendingAirDropBackupURL = nil
+            }
+            Button("Restore & Overwrite", role: .destructive) {
+                if let url = pendingAirDropBackupURL {
+                    executeAirDropRestore(from: url)
+                }
+            }
+        } message: {
+            Text("A full database backup was received via AirDrop. Would you like to restore it? All existing records on this device will be replaced.")
+        }
+        .alert("Backup Restored Successfully", isPresented: $showAirDropSuccessAlert) {
+            Button("Quit App", role: .cancel) {
+                exit(0)
+            }
+        } message: {
+            Text("The database has been fully overwritten. The app must now exit to reload your data. Please open the app again manually.")
         }
 
         // MARK: - Keyboard Shortcuts
@@ -241,6 +265,12 @@ struct ContentView: View {
     // MARK: - Helpers
 
     private func handleIncomingURL(_ url: URL) {
+        if url.isFileURL && url.pathExtension.lowercased() == "ftbackup" {
+            pendingAirDropBackupURL = url
+            showAirDropRestoreAlert = true
+            return
+        }
+
         guard let scheme = url.scheme?.lowercased(), scheme == "financetracker" else { return }
 
         let host = url.host?.lowercased() ?? ""
@@ -248,6 +278,18 @@ struct ContentView: View {
 
         if host == "backtap" || host == "quick-scan" || host == "scan" || path.contains("backtap") || path.contains("scan") {
             appState.showBackTapScanner = true
+        }
+    }
+
+    private func executeAirDropRestore(from url: URL) {
+        do {
+            _ = url.startAccessingSecurityScopedResource()
+            defer { url.stopAccessingSecurityScopedResource() }
+
+            try DatabaseBackupDocument.restore(from: url)
+            showAirDropSuccessAlert = true
+        } catch {
+            print("❌ AirDrop restore failed: \(error.localizedDescription)")
         }
     }
 

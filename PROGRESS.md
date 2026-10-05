@@ -366,12 +366,21 @@ FinanceTracker/
 - [x] **BAK-04**: Integrated `fileExporter` and `fileImporter` in `SettingsView`, allowing 1-click AirDrop export/import across iPhone and iPad to seamlessly overwrite data ← **(DONE)**
 - [x] **BAK-05**: Handled SQLite overwrites and app termination instruction (`exit(0)`) upon successful restore; bumped version to `v1.10.0 (Build 27)` ← **(DONE)**
 
+### Phase 38 — v1.10.1 Direct AirDrop Sharing, Unified File Importer & iPad Touch Responsiveness
+- [x] **BAK-06**: Diagnosed `.fileExporter` forcing intermediary save to Files App instead of direct AirDrop sharing; replaced with native `ShareLink` and on-demand `DatabaseBackupDocument.createExportFile()`, opening system Share Sheet directly with AirDrop row at top ← **(DONE)**
+- [x] **BAK-07**: Upgraded `.ftbackup` to a single binary archive file conforming to `public.data` (`DatabaseBackupArchive`) via `PropertyListEncoder`, eliminating folder AirDrop issues and preserving backwards compatibility ← **(DONE)**
+- [x] **BAK-08**: Registered `CFBundleDocumentTypes` for `com.local.FinanceTracker.ftbackup` with `Owner` role in `project.yml`, enabling iOS/iPadOS AirDrop dialog to display "Open with FinanceTracker" ← **(DONE)**
+- [x] **BAK-09**: Added incoming AirDrop file handler in `ContentView.swift` (`.onOpenURL`), presenting 1-tap "Restore Backup from AirDrop?" confirmation dialog to overwrite and restore database automatically upon receiving via AirDrop ← **(DONE)**
+- [x] **BAK-10**: Diagnosed iPad touch unresponsiveness on Export: added `.buttonStyle(.borderless)` to prevent Form row touch interception in iPadOS NavigationSplitView, enabling instant single-tap activation ← **(DONE)**
+- [x] **BAK-11**: Diagnosed iPad Import failure: resolved dual `.fileImporter` coordinator collision in SwiftUI by consolidating into a single root `.fileImporter` supporting dynamic `.backup` and `.csv` targets with `[.ftbackup, .data, .item]` content types ← **(DONE)**
+- [x] **BAK-12**: Added comprehensive automated unit tests in `BackupTests.swift`; bumped version to `v1.10.1 (Build 28)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 37 — v1.10.0 Full Database Backup & Restore Architecture (BAK-01 to BAK-05 DONE)
+Last Completed : Phase 38 — v1.10.1 Direct AirDrop Sharing, Unified File Importer & iPad Touch Responsiveness (BAK-06 to BAK-12 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -387,4 +396,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.10.0 (Build 27) — Phase 37 Completed & Released — 2026-10-05*
+*Last updated: v1.10.1 (Build 28) — Phase 38 Completed & Released — 2026-10-05*

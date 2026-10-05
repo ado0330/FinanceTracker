@@ -41,6 +41,7 @@
 		53C849BA068AC284439E3D6D /* MonthBreakdownSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30C14158E6C12D0CA36F56E7 /* MonthBreakdownSheet.swift */; };
 		5450805ACF38AC37B4B11533 /* Double+Currency.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30A801B39BD2797E0689B2AE /* Double+Currency.swift */; };
 		56A4A3ADBECC2BAB080ECB26 /* SplitMemberManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B0395F47EB0F8FB010D33B /* SplitMemberManagementView.swift */; };
+		56A8C6A53DA30326A9EEC3E3 /* BackupTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87CF36E2DB115F963B96C97B /* BackupTests.swift */; };
 		582C40DD8CDB30D37A41E3C5 /* TransferFundsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FACBA2C71EE756EEF0476DD /* TransferFundsSheet.swift */; };
 		59163C6CF6403B31111707AA /* Secrets.local.plist in Resources */ = {isa = PBXBuildFile; fileRef = 6FBE89ED965F13B9E12FB692 /* Secrets.local.plist */; };
 		5A2BBFD3E1A19EA326944854 /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = 222193AAE17AFF5D94335B71 /* Category.swift */; };
@@ -171,6 +172,7 @@
 		7D7CEDB84259F871B8B30AAD /* SplitMember.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitMember.swift; sourceTree = "<group>"; };
 		8631427D6A581931B5B8695B /* SplitterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitterTests.swift; sourceTree = "<group>"; };
 		87BA8EB7091C6B76CE252E32 /* CategoryExpensesDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryExpensesDetailSheet.swift; sourceTree = "<group>"; };
+		87CF36E2DB115F963B96C97B /* BackupTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackupTests.swift; sourceTree = "<group>"; };
 		888CEAE6E32E8C6A31CA5B0E /* Budget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Budget.swift; sourceTree = "<group>"; };
 		898CA90E63B36D300FD00884 /* MonthConclusionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MonthConclusionCard.swift; sourceTree = "<group>"; };
 		8FEF0379B110B4C87AA4BD4F /* AddEditLedgerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLedgerView.swift; sourceTree = "<group>"; };
@@ -234,6 +236,7 @@
 			isa = PBXGroup;
 			children = (
 				91A210FDE0CF2E2872B9131F /* AccountTests.swift */,
+				87CF36E2DB115F963B96C97B /* BackupTests.swift */,
 				A3F06E23DF4412A149380BD0 /* BudgetTests.swift */,
 				7CF8947CBF110D289047673F /* CSVServiceTests.swift */,
 				1A6D7E11E46612A351D32D39 /* ExtensionsTests.swift */,
@@ -674,6 +677,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				8410EE96E46D1B8DB050FC83 /* AccountTests.swift in Sources */,
+				56A8C6A53DA30326A9EEC3E3 /* BackupTests.swift in Sources */,
 				DB743A8C6821110B1D7FB144 /* BudgetTests.swift in Sources */,
 				F999A069758E8E057D66A63A /* CSVServiceTests.swift in Sources */,
 				61D61589E8464E2DAF686BE3 /* ExtensionsTests.swift in Sources */,
@@ -749,7 +753,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 28;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
@@ -765,7 +769,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.10.0;
+				MARKETING_VERSION = 1.10.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -874,7 +878,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 27;
+				CURRENT_PROJECT_VERSION = 28;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -896,7 +900,7 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.10.0;
+				MARKETING_VERSION = 1.10.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
