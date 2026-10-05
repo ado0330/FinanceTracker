@@ -64,12 +64,19 @@ struct ContentView: View {
         .task {
             DataSeeder.seedIfNeeded(context: context)
             DataSeeder.migrateExistingDataIfNeeded(context: context)
+            DataSeeder.deduplicateAndReconcile(context: context)
             selectDefaultLedger()
             RecurringService.processOverdue(context: context)
 
             // Start Realtime sync and initial sync
             SyncEngine.shared.startRealtimeSync(context: context)
             await SyncEngine.shared.syncAll(context: context)
+            DataSeeder.deduplicateAndReconcile(context: context)
+            selectDefaultLedger()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: SyncEngine.didCompleteCloudSyncNotification)) { _ in
+            DataSeeder.deduplicateAndReconcile(context: context)
+            selectDefaultLedger()
         }
         .onChange(of: ledgers) { _, _ in
             selectDefaultLedger()
@@ -256,7 +263,21 @@ struct ContentView: View {
     }
 
     private func selectDefaultLedger() {
-        guard appState.selectedLedger == nil else { return }
-        appState.selectedLedger = ledgers.first(where: { $0.isDefault }) ?? ledgers.first
+        // If current selection is still in ledgers and has transactions, keep it
+        if let current = appState.selectedLedger,
+           let fresh = ledgers.first(where: { $0.id == current.id }),
+           !fresh.transactions.isEmpty {
+            appState.selectedLedger = fresh
+            return
+        }
+
+        // Prefer ledger that contains transactions, then default, then first available
+        if let ledgerWithTx = ledgers.first(where: { !$0.transactions.isEmpty }) {
+            appState.selectedLedger = ledgerWithTx
+        } else if let defaultLedger = ledgers.first(where: { $0.isDefault }) {
+            appState.selectedLedger = defaultLedger
+        } else {
+            appState.selectedLedger = ledgers.first
+        }
     }
 }

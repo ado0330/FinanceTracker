@@ -14,6 +14,7 @@ import SwiftData
 public final class SyncEngine {
 
     public static let shared = SyncEngine()
+    public static let didCompleteCloudSyncNotification = Notification.Name("didCompleteCloudSyncNotification")
 
     // MARK: - State
 
@@ -138,10 +139,15 @@ public final class SyncEngine {
             // 2. Pull remote changes
             try await pullRemoteChanges(context: context)
 
+            // 3. Deduplicate and reconcile ledgers, categories, and accounts
+            DataSeeder.deduplicateAndReconcile(context: context)
+
             let now = Date.now
             lastSyncedAt = now
             status = .synced(now)
             isSyncing = false
+
+            NotificationCenter.default.post(name: SyncEngine.didCompleteCloudSyncNotification, object: nil)
         } catch {
             status = .error(error.localizedDescription)
             isSyncing = false
@@ -238,6 +244,7 @@ public final class SyncEngine {
                     context.insert(newLedger)
                 }
             }
+            try? context.save()
         }
 
         // Pull Categories
@@ -256,6 +263,7 @@ public final class SyncEngine {
                     context.insert(newCat)
                 }
             }
+            try? context.save()
         }
 
         // Pull Accounts
@@ -285,6 +293,7 @@ public final class SyncEngine {
                     context.insert(newAcc)
                 }
             }
+            try? context.save()
         }
 
         // Pull Transactions
@@ -304,6 +313,15 @@ public final class SyncEngine {
                         local.type = TransactionType(rawValue: remote.type) ?? .expense
                         local.date = remote.date
                         local.note = remote.note
+                        if local.ledger == nil || (remote.ledger_id != nil && local.ledger?.id != remote.ledger_id) {
+                            local.ledger = allLedgers.first(where: { $0.id == remote.ledger_id }) ?? local.ledger
+                        }
+                        if local.category == nil || (remote.category_id != nil && local.category?.id != remote.category_id) {
+                            local.category = allCategories.first(where: { $0.id == remote.category_id }) ?? local.category
+                        }
+                        if local.account == nil || (remote.account_id != nil && local.account?.id != remote.account_id) {
+                            local.account = allAccounts.first(where: { $0.id == remote.account_id }) ?? local.account
+                        }
                         if let b64 = remote.receipt_image_base64 {
                             local.receiptImageData = Data(base64Encoded: b64)
                         }
@@ -311,6 +329,9 @@ public final class SyncEngine {
                 } else if remote.deleted_at == nil {
                     let matchedCategory = allCategories.first(where: { $0.id == remote.category_id })
                     let matchedLedger = allLedgers.first(where: { $0.id == remote.ledger_id })
+                        ?? allLedgers.first(where: { !$0.transactions.isEmpty })
+                        ?? allLedgers.first(where: { $0.isDefault })
+                        ?? allLedgers.first
                     let matchedAccount = allAccounts.first(where: { $0.id == remote.account_id })
                     let txType = TransactionType(rawValue: remote.type) ?? .expense
                     let receiptData = remote.receipt_image_base64.flatMap { Data(base64Encoded: $0) }
@@ -330,9 +351,8 @@ public final class SyncEngine {
                     context.insert(newTx)
                 }
             }
+            try? context.save()
         }
-
-        try? context.save()
     }
 
     private func fetchRecords<T: Decodable>(endpoint: String) async throws -> [T] {
@@ -354,6 +374,22 @@ public final class SyncEngine {
         return try jsonDecoder.decode([T].self, from: data)
     }
 
+    // MARK: - Direct Cloud Record Deletion
+
+    public func deleteRecordFromCloud(endpoint: String, id: UUID) async {
+        guard isConfigured, let baseURL = URL(string: supabaseURL) else { return }
+        let url = baseURL.appendingPathComponent("rest/v1/\(endpoint)")
+            .appending(queryItems: [URLQueryItem(name: "id", value: "eq.\(id.uuidString)")])
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(supabaseAnonKey)", forHTTPHeaderField: "Authorization")
+
+        _ = try? await URLSession.shared.data(for: request)
+    }
+
     // MARK: - Realtime WebSocket Connection
 
     public func startRealtimeSync(context: ModelContext) {
@@ -366,6 +402,12 @@ public final class SyncEngine {
         webSocketTask?.cancel(with: .normalClosure, reason: nil)
         webSocketTask = URLSession.shared.webSocketTask(with: wsURL)
         webSocketTask?.resume()
+
+        // Phoenix Channel join payload to listen for postgres table changes
+        let joinMessage = """
+        {"topic":"realtime:public","event":"phx_join","payload":{},"ref":"1"}
+        """
+        webSocketTask?.send(.string(joinMessage)) { _ in }
 
         listenForMessages(context: context)
         startHeartbeat()
@@ -382,7 +424,9 @@ public final class SyncEngine {
                     if text.contains("INSERT") || text.contains("UPDATE") || text.contains("DELETE") {
                         Task { @MainActor in
                             try? await self.pullRemoteChanges(context: context)
+                            DataSeeder.deduplicateAndReconcile(context: context)
                             self.status = .synced(.now)
+                            NotificationCenter.default.post(name: SyncEngine.didCompleteCloudSyncNotification, object: nil)
                         }
                     }
                 case .data:
@@ -392,7 +436,7 @@ public final class SyncEngine {
                 }
                 self.listenForMessages(context: context)
             case .failure:
-                // Reconnect if needed
+                // Connection closed or interrupted
                 break
             }
         }
@@ -401,11 +445,7 @@ public final class SyncEngine {
     private func startHeartbeat() {
         pingTimer?.invalidate()
         pingTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
-            self?.webSocketTask?.sendPing { error in
-                if error != nil {
-                    // Reconnect on next cycle
-                }
-            }
+            self?.webSocketTask?.sendPing { _ in }
         }
     }
 }

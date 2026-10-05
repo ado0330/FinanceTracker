@@ -52,7 +52,7 @@ struct TrendLineChart: View {
 
     private var ledgerTransactions: [Transaction] {
         guard let l = appState.selectedLedger else { return allTransactions }
-        return allTransactions.filter { $0.ledger?.id == l.id }
+        return allTransactions.filter { $0.ledger?.id == l.id || $0.ledger == nil }
     }
 
     /// 6-month window ending with targetDate (or current date if target is in the past)

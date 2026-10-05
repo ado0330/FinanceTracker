@@ -25,7 +25,7 @@ struct ChartsView: View {
 
     private var ledgerTransactions: [Transaction] {
         guard let ledger = appState.selectedLedger else { return allTransactions }
-        return allTransactions.filter { $0.ledger?.id == ledger.id }
+        return allTransactions.filter { $0.ledger?.id == ledger.id || $0.ledger == nil }
     }
 
     private var currencyCode: String {

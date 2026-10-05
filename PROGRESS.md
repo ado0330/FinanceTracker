@@ -339,12 +339,21 @@ FinanceTracker/
 - [x] **SYNC-09**: Streamlined `SettingsView.swift` by completely disabling/removing the raw Project URL and Anon Public Key inputs, preventing technical database credentials from being exposed to the user while maintaining seamless background auto-sync via `Secrets.local.plist` ← **(DONE)**
 - [x] **SYNC-10**: Added `testAccountAndBudgetDTOSerialization()` in `SyncTests.swift`; verified all 48 tests pass (48/48 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.2 (Build 23)` ← **(DONE)**
 
+### Phase 34 — v1.9.3 Multi-Device Ledger Reconciliation & Auto-Selection of Synced Transactions
+- [x] **SYNC-11**: Diagnosed cross-device sync display issue: iPhone uploaded all 11 existing transactions and 6 bank accounts under its "Personal" ledger UUID, but iPad seeded a fresh local "Personal" ledger UUID before syncing, leaving `appState.selectedLedger` pointing to the empty local ledger ← **(DONE)**
+- [x] **SYNC-12**: Implemented `DataSeeder.deduplicateAndReconcile(context:)` to automatically merge duplicate ledgers into the primary ledger holding transactions, safely migrate children (transactions, budgets, recurring rules), remove empty placeholder accounts, deduplicate categories, and re-link orphan transactions ← **(DONE)**
+- [x] **SYNC-13**: Enhanced `SyncEngine.swift` with post-sync reconciliation, phoenix join message (`phx_join`) for streaming real-time Postgres changes, direct cloud deletion (`deleteRecordFromCloud`), and `didCompleteCloudSyncNotification` notification broadcasting ← **(DONE)**
+- [x] **SYNC-14**: Added instant background sync trigger on transaction mutations in `AddEditTransactionView.swift` and instant cloud deletion via `SyncEngine.deleteRecordFromCloud` in `TransactionListView.swift` ← **(DONE)**
+- [x] **SYNC-15**: Refactored `selectDefaultLedger()` in `ContentView.swift` to automatically prioritize ledgers with transactions and observe `didCompleteCloudSyncNotification`, ensuring iPad immediately switches to the user's synced active ledger ← **(DONE)**
+- [x] **SYNC-16**: Updated view filters across `DashboardView`, `TransactionListView`, `ChartsView`, `SpendingDonutChart`, and `TrendLineChart` to include fallback for transactions with nil ledger references ← **(DONE)**
+- [x] **SYNC-17**: Added `testDeduplicateAndReconcile()` in `SyncTests.swift`; verified all 49 tests pass (49/49 passed); guaranteed 100% English UI (0 Chinese characters); bumped version to `v1.9.3 (Build 24)` ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 33 — v1.9.2 Cloud Sync Schema Alignment & Secure UI Streamlining (SYNC-06 to SYNC-10 DONE)
+Last Completed : Phase 34 — v1.9.3 Multi-Device Ledger Reconciliation & Auto-Selection of Synced Transactions (SYNC-11 to SYNC-17 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -360,4 +369,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.9.2 (Build 23) — Phase 33 Completed & Released — 2026-10-05*
+*Last updated: v1.9.3 (Build 24) — Phase 34 Completed & Released — 2026-10-05*

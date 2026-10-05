@@ -469,6 +469,10 @@ struct AddEditTransactionView: View {
             modelContext.insert(new)
         }
         try? modelContext.save()
+        let ctx = modelContext
+        Task {
+            await SyncEngine.shared.syncAll(context: ctx)
+        }
         onDismiss()
     }
 }

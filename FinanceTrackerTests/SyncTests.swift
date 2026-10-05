@@ -129,4 +129,30 @@ final class SyncTests: XCTestCase {
         XCTAssertEqual(decodedAcc.last_four, "5678")
         XCTAssertEqual(decodedAcc.starting_balance, 2500.0)
     }
+
+    func testDeduplicateAndReconcile() throws {
+        // Create duplicate Personal ledgers: one empty, one with transactions
+        let emptyLedger = Ledger(name: "Personal", isDefault: false)
+        let activeLedger = Ledger(name: "Personal", isDefault: true)
+
+        context.insert(emptyLedger)
+        context.insert(activeLedger)
+
+        let tx = Transaction(name: "Coffee", amount: 12.0, type: .expense, date: .now, ledger: activeLedger)
+        context.insert(tx)
+        try context.save()
+
+        // Before deduplication: 2 ledgers
+        let beforeLedgers = try context.fetch(FetchDescriptor<Ledger>())
+        XCTAssertEqual(beforeLedgers.count, 2)
+
+        // Run deduplicate and reconcile
+        DataSeeder.deduplicateAndReconcile(context: context)
+
+        // After deduplication: 1 ledger, containing the transaction
+        let afterLedgers = try context.fetch(FetchDescriptor<Ledger>())
+        XCTAssertEqual(afterLedgers.count, 1)
+        XCTAssertEqual(afterLedgers.first?.id, activeLedger.id)
+        XCTAssertEqual(afterLedgers.first?.transactions.count, 1)
+    }
 }

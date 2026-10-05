@@ -26,8 +26,10 @@ struct DashboardView: View {
 
     /// Transactions for the active ledger only.
     private var ledgerTransactions: [Transaction] {
-        guard let l = ledger else { return [] }
-        return allTransactions.filter { $0.ledger?.id == l.id }
+        if let l = ledger {
+            return allTransactions.filter { $0.ledger?.id == l.id || $0.ledger == nil }
+        }
+        return allTransactions
     }
 
     /// Period-filtered transactions.

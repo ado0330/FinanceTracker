@@ -190,7 +190,7 @@ struct SpendingDonutChart: View {
     private var periodTransactions: [Transaction] {
         guard let l = appState.selectedLedger else { return [] }
         return allTransactions.filter { txn in
-            guard txn.ledger?.id == l.id, txn.type == .expense else { return false }
+            guard (txn.ledger?.id == l.id || txn.ledger == nil), txn.type == .expense else { return false }
             return period == .monthly
                 ? txn.date.isSameMonth(as: targetDate)
                 : txn.date.isSameWeek(as: targetDate)

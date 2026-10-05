@@ -144,4 +144,96 @@ struct DataSeeder {
         UserDefaults.standard.set(true, forKey: "hasMigratedToMYR_v1_1")
         seedIfNeeded(context: context)
     }
+
+    // MARK: - Deduplication & Cloud Reconciliation
+
+    static func deduplicateAndReconcile(context: ModelContext) {
+        // 1. Reconcile Ledgers: keep the one with transactions, delete empty duplicates
+        let ledgerDescriptor = FetchDescriptor<Ledger>()
+        if let allLedgers = try? context.fetch(ledgerDescriptor) {
+            let grouped = Dictionary(grouping: allLedgers, by: { $0.name.lowercased() })
+            for (_, group) in grouped where group.count > 1 {
+                guard let primary = group.first(where: { !$0.transactions.isEmpty })
+                    ?? group.first(where: { $0.isDefault })
+                    ?? group.first else { continue }
+
+                for duplicate in group where duplicate.id != primary.id {
+                    for tx in duplicate.transactions {
+                        tx.ledger = primary
+                    }
+                    duplicate.transactions.removeAll()
+
+                    for b in duplicate.budgets {
+                        b.ledger = primary
+                    }
+                    duplicate.budgets.removeAll()
+
+                    for r in duplicate.recurringRules {
+                        r.ledger = primary
+                    }
+                    duplicate.recurringRules.removeAll()
+
+                    context.delete(duplicate)
+                }
+            }
+        }
+
+        // 2. Clean up dummy "Main Checking" if real accounts exist
+        let accountDescriptor = FetchDescriptor<Account>()
+        if let allAccounts = try? context.fetch(accountDescriptor) {
+            let realAccounts = allAccounts.filter {
+                $0.name != "Main Checking" || $0.initialBalance > 0 || !$0.transactions.isEmpty
+            }
+            if !realAccounts.isEmpty {
+                let dummyAccounts = allAccounts.filter {
+                    $0.name == "Main Checking" && $0.initialBalance == 0 && $0.transactions.isEmpty
+                }
+                for dummy in dummyAccounts {
+                    context.delete(dummy)
+                }
+            }
+        }
+
+        // 3. Deduplicate Categories
+        let catDescriptor = FetchDescriptor<Category>()
+        if let allCategories = try? context.fetch(catDescriptor) {
+            let grouped = Dictionary(grouping: allCategories, by: { "\($0.name.lowercased())_\($0.type.rawValue)" })
+            for (_, group) in grouped where group.count > 1 {
+                guard let primary = group.first(where: { !$0.transactions.isEmpty }) ?? group.first else { continue }
+                for duplicate in group where duplicate.id != primary.id {
+                    for tx in duplicate.transactions {
+                        tx.category = primary
+                    }
+                    duplicate.transactions.removeAll()
+
+                    for b in duplicate.budgets {
+                        b.category = primary
+                    }
+                    duplicate.budgets.removeAll()
+
+                    for r in duplicate.recurringRules {
+                        r.category = primary
+                    }
+                    duplicate.recurringRules.removeAll()
+
+                    context.delete(duplicate)
+                }
+            }
+        }
+
+        // 4. Ensure no orphaned transactions without a ledger
+        let txDescriptor = FetchDescriptor<Transaction>()
+        if let allTx = try? context.fetch(txDescriptor) {
+            let allLedgers = (try? context.fetch(ledgerDescriptor)) ?? []
+            if let defaultLedger = allLedgers.first(where: { !$0.transactions.isEmpty })
+                ?? allLedgers.first(where: { $0.isDefault })
+                ?? allLedgers.first {
+                for tx in allTx where tx.ledger == nil {
+                    tx.ledger = defaultLedger
+                }
+            }
+        }
+
+        try? context.save()
+    }
 }

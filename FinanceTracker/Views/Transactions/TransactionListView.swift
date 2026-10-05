@@ -35,7 +35,7 @@ struct TransactionListView: View {
 
     private var ledgerTransactions: [Transaction] {
         if let activeLedger = appState.selectedLedger {
-            return allTransactions.filter { $0.ledger?.id == activeLedger.id }
+            return allTransactions.filter { $0.ledger?.id == activeLedger.id || $0.ledger == nil }
         } else {
             return allTransactions
         }
@@ -340,7 +340,7 @@ struct TransactionListView: View {
                                     Divider()
 
                                     Button(role: .destructive) {
-                                        withAnimation { modelContext.delete(txn) }
+                                        deleteTransaction(txn)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -349,7 +349,7 @@ struct TransactionListView: View {
                                 }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                        withAnimation { modelContext.delete(txn) }
+                                        deleteTransaction(txn)
                                     } label: {
                                         Label("Delete", systemImage: "trash")
                                     }
@@ -550,6 +550,17 @@ struct TransactionListView: View {
         let prevStart = monthDate.adding(.month, value: -1).startOfMonth
         let prevEnd = monthDate.adding(.month, value: -1).endOfMonth
         return ledgerTransactions.filter { $0.date >= prevStart && $0.date <= prevEnd }
+    }
+
+    private func deleteTransaction(_ txn: Transaction) {
+        let txnId = txn.id
+        withAnimation {
+            modelContext.delete(txn)
+        }
+        try? modelContext.save()
+        Task {
+            await SyncEngine.shared.deleteRecordFromCloud(endpoint: "transactions", id: txnId)
+        }
     }
 }
 
