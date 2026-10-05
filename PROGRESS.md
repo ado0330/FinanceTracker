@@ -355,12 +355,16 @@ FinanceTracker/
 - [x] **SYNC-21**: Upgraded `selectDefaultLedger()` in `ContentView.swift` to directly query transaction records rather than relying on lazy SwiftData relationship faults, guaranteeing instantaneous selection of the active synced ledger ← **(DONE)**
 - [x] **SYNC-22**: Automatically deleted remote duplicate ledgers and placeholder accounts from Supabase; verified all 49 automated unit tests pass (49/49 passed); guaranteed 100% English UI; bumped version to `v1.9.4 (Build 25)` ← **(DONE)**
 
+### Phase 36 — v1.9.5 Image Payload Compression for Supabase 500 Error Fix
+- [x] **SYNC-23**: Diagnosed HTTP 500 error during `syncAll` caused by massive raw camera image payloads encoded as base64 exceeding Supabase PostgREST JSON limits. ← **(DONE)**
+- [x] **SYNC-24**: Implemented on-the-fly image compression in `TransactionDTO.swift`, resizing receipt images to a maximum dimension of 800px and 0.5 JPEG compression before base64 encoding. ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 35 — v1.9.4 Pull-First Sync Architecture, Canonical Ledger Seeding & Remote Deduplication (SYNC-18 to SYNC-22 DONE)
+Last Completed : Phase 36 — v1.9.5 Image Payload Compression for Supabase 500 Error Fix (SYNC-23 to SYNC-24 DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```

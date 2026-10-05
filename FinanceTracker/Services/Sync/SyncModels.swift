@@ -1,5 +1,5 @@
 import Foundation
-
+import UIKit
 /// Data Transfer Objects (DTOs) for mapping between SwiftData and Supabase PostgreSQL.
 public struct LedgerDTO: Codable, Identifiable {
     public let id: UUID
@@ -99,7 +99,25 @@ public struct TransactionDTO: Codable, Identifiable {
         self.type = transaction.type.rawValue
         self.date = transaction.date
         self.note = transaction.note
-        self.receipt_image_base64 = transaction.receiptImageData?.base64EncodedString()
+        
+        if let data = transaction.receiptImageData, let uiImage = UIImage(data: data) {
+            let maxSize: CGFloat = 800.0
+            var finalImage = uiImage
+            if uiImage.size.width > maxSize || uiImage.size.height > maxSize {
+                let ratio = min(maxSize / uiImage.size.width, maxSize / uiImage.size.height)
+                let newSize = CGSize(width: uiImage.size.width * ratio, height: uiImage.size.height * ratio)
+                UIGraphicsBeginImageContextWithOptions(newSize, false, 1.0)
+                uiImage.draw(in: CGRect(origin: .zero, size: newSize))
+                if let resizedImage = UIGraphicsGetImageFromCurrentImageContext() {
+                    finalImage = resizedImage
+                }
+                UIGraphicsEndImageContext()
+            }
+            self.receipt_image_base64 = finalImage.jpegData(compressionQuality: 0.5)?.base64EncodedString()
+        } else {
+            self.receipt_image_base64 = nil
+        }
+        
         self.ledger_id = transaction.ledger?.id
         self.category_id = transaction.category?.id
         self.account_id = transaction.account?.id
