@@ -16,6 +16,7 @@ struct TransferFundsSheet: View {
     @State private var amountText: String = ""
     @State private var date: Date = .now
     @State private var note: String = ""
+    @State private var recordInTransactions: Bool = true
 
     private var amountDouble: Double {
         Double(amountText.replacingOccurrences(of: ",", with: ".")) ?? 0.0
@@ -73,6 +74,16 @@ struct TransferFundsSheet: View {
                     DatePicker("Date", selection: $date, displayedComponents: [.date])
                 }
 
+                // ── Options ───────────────────────────────────────────────
+                Section(
+                    header: Text("Transaction History"),
+                    footer: Text(recordInTransactions
+                        ? "Inflow and outflow transactions will be logged in your ledger history."
+                        : "Only account balances are updated directly. No transactions will be logged.")
+                ) {
+                    Toggle("Record in Transactions", isOn: $recordInTransactions)
+                }
+
                 // ── Note ──────────────────────────────────────────────────
                 Section(header: Text("Note (optional)")) {
                     TextField("e.g. Monthly Savings Transfer", text: $note)
@@ -95,7 +106,7 @@ struct TransferFundsSheet: View {
                     fromAccount = accounts.first
                 }
                 if toAccount == nil && accounts.count > 1 {
-                    toAccount = accounts[1]
+                    toAccount = accounts.count > 1 ? accounts[1] : accounts.first
                 }
             }
         }
@@ -108,34 +119,49 @@ struct TransferFundsSheet: View {
             ? "Transfer: \(from.name) → \(to.name)"
             : note.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        // 1. Outflow from source account
-        let outflowTx = Transaction(
-            name: "Transfer to \(to.name)",
-            amount: amountDouble,
-            type: .expense,
-            date: date,
-            note: "\(defaultNote) (Outflow)",
-            ledger: appState.selectedLedger,
-            category: nil,
-            account: from
-        )
+        if recordInTransactions {
+            // 1. Outflow from source account
+            let outflowTx = Transaction(
+                name: "Transfer to \(to.name)",
+                amount: amountDouble,
+                type: .expense,
+                date: date,
+                note: "\(defaultNote) (Outflow)",
+                ledger: appState.selectedLedger,
+                category: nil,
+                account: from
+            )
 
-        // 2. Inflow to target account
-        let inflowTx = Transaction(
-            name: "Transfer from \(from.name)",
-            amount: amountDouble,
-            type: .income,
-            date: date,
-            note: "\(defaultNote) (Inflow)",
-            ledger: appState.selectedLedger,
-            category: nil,
-            account: to
-        )
+            // 2. Inflow to target account
+            let inflowTx = Transaction(
+                name: "Transfer from \(from.name)",
+                amount: amountDouble,
+                type: .income,
+                date: date,
+                note: "\(defaultNote) (Inflow)",
+                ledger: appState.selectedLedger,
+                category: nil,
+                account: to
+            )
 
-        modelContext.insert(outflowTx)
-        modelContext.insert(inflowTx)
+            modelContext.insert(outflowTx)
+            modelContext.insert(inflowTx)
+        } else {
+            // Adjust balances directly without polluting transaction history
+            if from.accountType == .creditCard {
+                from.initialBalance += amountDouble
+            } else {
+                from.initialBalance -= amountDouble
+            }
+
+            if to.accountType == .creditCard {
+                to.initialBalance -= amountDouble
+            } else {
+                to.initialBalance += amountDouble
+            }
+        }
+
         try? modelContext.save()
-
         dismiss()
     }
 }

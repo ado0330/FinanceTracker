@@ -15,12 +15,12 @@ struct ChartsView: View {
 
     private struct DrilldownTarget: Identifiable {
         let categoryName: String
-        var id: String { categoryName }
+        var transactionType: TransactionType = .expense
+        var id: String { "\(categoryName)_\(transactionType.rawValue)" }
     }
 
     @State private var period: SummaryPeriod = .monthly
     @State private var selectedMonthDate: Date = Date.now.startOfMonth
-    @State private var showMonthBreakdownSheet: Bool = false
     @State private var drilldownTarget: DrilldownTarget? = nil
 
     private var ledgerTransactions: [Transaction] {
@@ -58,32 +58,18 @@ struct ChartsView: View {
                     // iPad Multi-Column Layout
                     VStack(spacing: 20) {
                         monthNavigator
-                        MonthConclusionCard(
-                            selectedDate: selectedMonthDate,
-                            transactions: ledgerTransactions,
-                            currencyCode: currencyCode,
-                            onViewTransactions: {
-                                showMonthBreakdownSheet = true
-                            }
-                        )
-                        .accessibilityIdentifier("monthConclusionCard")
 
                         HStack(alignment: .top, spacing: 20) {
-                            // Column 1: Comparisons & Category Explorer
-                            VStack(spacing: 20) {
-                                CategorySpendingComparisonCard(
-                                    transactions: ledgerTransactions,
-                                    currencyCode: currencyCode,
-                                    targetDate: selectedMonthDate,
-                                    onSelectCategory: { categoryName in
-                                        drilldownTarget = DrilldownTarget(categoryName: categoryName)
-                                    }
-                                )
-                                .accessibilityIdentifier("spendingComparisonCard")
-
-                                categoryExplorerCard
-                                    .accessibilityIdentifier("categoryExpenseExplorer")
-                            }
+                            // Column 1: Comparisons
+                            CategorySpendingComparisonCard(
+                                transactions: ledgerTransactions,
+                                currencyCode: currencyCode,
+                                targetDate: selectedMonthDate,
+                                onSelectCategory: { categoryName, type in
+                                    drilldownTarget = DrilldownTarget(categoryName: categoryName, transactionType: type)
+                                }
+                            )
+                            .accessibilityIdentifier("spendingComparisonCard")
                             .frame(maxWidth: .infinity)
 
                             // Column 2: Donut Chart & Trend Line
@@ -99,8 +85,8 @@ struct ChartsView: View {
                                 SpendingDonutChart(
                                     period: period,
                                     targetDate: selectedMonthDate,
-                                    onSelectCategory: { categoryName in
-                                        drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                                    onSelectCategory: { categoryName, type in
+                                        drilldownTarget = DrilldownTarget(categoryName: categoryName, transactionType: type)
                                     }
                                 )
                                 .accessibilityIdentifier("spendingDonutChart")
@@ -125,28 +111,15 @@ struct ChartsView: View {
                     VStack(spacing: 18) {
                         monthNavigator
 
-                        MonthConclusionCard(
-                            selectedDate: selectedMonthDate,
-                            transactions: ledgerTransactions,
-                            currencyCode: currencyCode,
-                            onViewTransactions: {
-                                showMonthBreakdownSheet = true
-                            }
-                        )
-                        .accessibilityIdentifier("monthConclusionCard")
-
                         CategorySpendingComparisonCard(
                             transactions: ledgerTransactions,
                             currencyCode: currencyCode,
                             targetDate: selectedMonthDate,
-                            onSelectCategory: { categoryName in
-                                drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                            onSelectCategory: { categoryName, type in
+                                drilldownTarget = DrilldownTarget(categoryName: categoryName, transactionType: type)
                             }
                         )
                         .accessibilityIdentifier("spendingComparisonCard")
-
-                        categoryExplorerCard
-                            .accessibilityIdentifier("categoryExpenseExplorer")
 
                         Picker("Period", selection: $period) {
                             ForEach(SummaryPeriod.allCases) { p in
@@ -160,8 +133,8 @@ struct ChartsView: View {
                         SpendingDonutChart(
                             period: period,
                             targetDate: selectedMonthDate,
-                            onSelectCategory: { categoryName in
-                                drilldownTarget = DrilldownTarget(categoryName: categoryName)
+                            onSelectCategory: { categoryName, type in
+                                drilldownTarget = DrilldownTarget(categoryName: categoryName, transactionType: type)
                             }
                         )
                         .accessibilityIdentifier("spendingDonutChart")
@@ -187,32 +160,14 @@ struct ChartsView: View {
                 ToolbarItem(placement: .principal) {
                     LedgerSwitcherView()
                 }
-
-            }
-            .sheet(isPresented: $showMonthBreakdownSheet) {
-                let monthTxns = ledgerTransactions.filter {
-                    $0.date >= selectedMonthDate.startOfMonth && $0.date <= selectedMonthDate.endOfMonth
-                }
-                let prevStart = selectedMonthDate.adding(.month, value: -1).startOfMonth
-                let prevEnd = selectedMonthDate.adding(.month, value: -1).endOfMonth
-                let prevTxns = ledgerTransactions.filter {
-                    $0.date >= prevStart && $0.date <= prevEnd
-                }
-
-                MonthBreakdownSheet(
-                    monthTitle: selectedMonthDate.monthYearString,
-                    monthDate: selectedMonthDate,
-                    transactions: monthTxns,
-                    previousMonthTransactions: prevTxns,
-                    currencyCode: currencyCode
-                )
             }
             .sheet(item: $drilldownTarget) { target in
                 CategoryExpensesDetailSheet(
                     monthDate: selectedMonthDate,
                     currencyCode: currencyCode,
                     allMonthTransactions: ledgerTransactions,
-                    selectedCategoryName: target.categoryName
+                    selectedCategoryName: target.categoryName,
+                    transactionType: target.transactionType
                 )
                 .id(target.id)
             }
@@ -303,106 +258,5 @@ struct ChartsView: View {
         }
         .padding(.vertical, 2)
     }
-
-    // MARK: - Category Explorer Card
-
-    private var categoryExplorerCard: some View {
-        let monthTxns = ledgerTransactions.filter {
-            $0.type == .expense &&
-            $0.date >= selectedMonthDate.startOfMonth &&
-            $0.date <= selectedMonthDate.endOfMonth
-        }
-        let grouped = Dictionary(grouping: monthTxns, by: { $0.category?.name ?? "Uncategorised" })
-        let sortedCategories = grouped.map { (catName, txns) -> (name: String, total: Double, count: Int, category: Category?) in
-            (name: catName, total: txns.reduce(0) { $0 + $1.amount }, count: txns.count, category: txns.first?.category)
-        }.sorted { $0.total > $1.total }
-
-        return VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Category Expense Explorer")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-                    Text("Tap any category to inspect expenses sorted highest first")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption.bold())
-                    .foregroundStyle(.secondary)
-            }
-
-            if sortedCategories.isEmpty {
-                HStack(spacing: 8) {
-                    Image(systemName: "tray")
-                        .foregroundStyle(.secondary)
-                    Text("No expenses recorded for \(selectedMonthDate.monthYearString)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding(.vertical, 8)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
-                        ForEach(sortedCategories, id: \.name) { item in
-                            Button {
-                                drilldownTarget = DrilldownTarget(categoryName: item.name)
-                            } label: {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack(spacing: 6) {
-                                        Image(systemName: item.category?.icon ?? "folder")
-                                            .font(.caption.bold())
-                                            .foregroundStyle(item.category.map { Color(hex: $0.colorHex) } ?? .primary)
-                                            .frame(width: 24, height: 24)
-                                            .background(
-                                                (item.category.map { Color(hex: $0.colorHex) } ?? .primary).opacity(0.12)
-                                            )
-                                            .clipShape(Circle())
-
-                                        Text(item.name)
-                                            .font(.subheadline.weight(.semibold))
-                                            .foregroundStyle(.primary)
-                                            .lineLimit(1)
-                                    }
-
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(item.total.currencyString(code: currencyCode))
-                                            .font(.headline.weight(.bold))
-                                            .foregroundStyle(.primary)
-
-                                        HStack(spacing: 4) {
-                                            Text("\(item.count) \(item.count == 1 ? "expense" : "expenses")")
-                                                .font(.caption2)
-                                                .foregroundStyle(.secondary)
-                                            Text("·")
-                                                .font(.caption2)
-                                                .foregroundStyle(.secondary)
-                                            Text("Highest First")
-                                                .font(.caption2.weight(.semibold))
-                                                .foregroundStyle(.primary)
-                                        }
-                                    }
-                                }
-                                .padding(12)
-                                .background(Color(uiColor: .secondarySystemGroupedBackground))
-                                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(Color.primary.opacity(0.06), lineWidth: 1)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("explorerCat_\(item.name)")
-                        }
-                    }
-                    .padding(.vertical, 2)
-                }
-            }
-        }
-        .padding(16)
-        .background(Color(uiColor: .secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .shadow(color: .black.opacity(0.03), radius: 6, x: 0, y: 2)
-    }
 }
+

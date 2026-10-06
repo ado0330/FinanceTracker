@@ -286,9 +286,38 @@ struct ReceiptItemAssignmentView: View {
                         }
                         .buttonStyle(.plain)
 
-                        // Member Avatar Selector
-                        ScrollView(.horizontal) {
-                            HStack(spacing: 8) {
+                        // Member Selection & Select All Controls
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                let assignedCount = item.assignedMemberIDs.count
+                                Text("Assign to (\(assignedCount)/\(members.count)):")
+                                    .font(.caption2.weight(.medium))
+                                    .foregroundStyle(.secondary)
+
+                                Spacer()
+
+                                Button {
+                                    toggleSelectAll(itemIndex: idx)
+                                } label: {
+                                    let isAll = !members.isEmpty && item.assignedMemberIDs.count == members.count
+                                    HStack(spacing: 4) {
+                                        Image(systemName: isAll ? "checkmark.circle.fill" : "circle")
+                                            .font(.caption2)
+                                        Text(isAll ? "Deselect All" : "Select All")
+                                            .font(.caption2.weight(.semibold))
+                                    }
+                                    .foregroundStyle(isAll ? Color.primary : Color.secondary)
+                                    .padding(.horizontal, 9)
+                                    .padding(.vertical, 4)
+                                    .background(Color.primary.opacity(0.06))
+                                    .clipShape(Capsule())
+                                }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("selectAllBtn_\(idx)")
+                            }
+
+                            // Adaptive Multi-Column Grid (all members visible at a glance, no scrolling)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 110), spacing: 8)], spacing: 8) {
                                 ForEach(members) { member in
                                     let isAssigned = item.assignedMemberIDs.contains(member.id)
                                     let assignedCount = max(1, item.assignedMemberIDs.count)
@@ -297,42 +326,47 @@ struct ReceiptItemAssignmentView: View {
                                     Button {
                                         toggleMemberAssignment(itemIndex: idx, memberID: member.id)
                                     } label: {
-                                        HStack(spacing: 6) {
+                                        HStack(spacing: 8) {
                                             Circle()
                                                 .fill(Color(hex: member.colorHex))
-                                                .frame(width: 20, height: 20)
+                                                .frame(width: 24, height: 24)
                                                 .overlay(
                                                     Image(systemName: isAssigned ? "checkmark" : member.icon)
-                                                        .font(.system(size: 9, weight: .bold))
+                                                        .font(.system(size: 11, weight: .bold))
                                                         .foregroundStyle(.white)
                                                 )
 
-                                            Text(member.name)
-                                                .font(.caption.weight(isAssigned ? .semibold : .regular))
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(member.name)
+                                                    .font(.caption.weight(isAssigned ? .semibold : .regular))
+                                                    .lineLimit(1)
 
-                                            if isAssigned {
-                                                Text("(\(perPerson.currencyString(code: currencyCode)))")
-                                                    .font(.system(size: 10))
-                                                    .foregroundStyle(.secondary)
+                                                if isAssigned {
+                                                    Text(perPerson.currencyString(code: currencyCode))
+                                                        .font(.system(size: 9))
+                                                        .foregroundStyle(.secondary)
+                                                }
                                             }
+
+                                            Spacer(minLength: 0)
                                         }
                                         .padding(.horizontal, 10)
-                                        .padding(.vertical, 7)
+                                        .padding(.vertical, 8)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
                                         .background(
-                                            Capsule()
+                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
                                                 .fill(isAssigned ? Color.primary.opacity(0.12) : Color.primary.opacity(0.04))
                                         )
                                         .overlay(
-                                            Capsule()
+                                            RoundedRectangle(cornerRadius: 10, style: .continuous)
                                                 .stroke(isAssigned ? Color.primary : Color.clear, lineWidth: 1.5)
                                         )
                                     }
                                     .buttonStyle(.plain)
+                                    .accessibilityIdentifier("memberChip_\(idx)_\(member.id)")
                                 }
                             }
-                            .padding(.vertical, 2)
                         }
-                        .scrollIndicators(.hidden)
                     }
                     .padding(.vertical, 4)
                 }
@@ -517,12 +551,12 @@ struct ReceiptItemAssignmentView: View {
                     Button("Add") {
                         if let price = Double(newItemPrice), !newItemName.trimmingCharacters(in: .whitespaces).isEmpty {
                             let unitPrice = (price / Double(newItemQty) * 100).rounded() / 100.0
-                            // Default: assign to all members
+                            // Default: unassigned
                             items.append(ReceiptLineItem(
                                 name: newItemName.trimmingCharacters(in: .whitespaces),
                                 unitPrice: unitPrice,
                                 quantity: newItemQty,
-                                assignedMemberIDs: members.map { $0.id }
+                                assignedMemberIDs: []
                             ))
                             showAddItemSheet = false
                         }
@@ -627,9 +661,9 @@ struct ReceiptItemAssignmentView: View {
 
     private func applyScannedResult(_ result: ParsedReceiptResult) {
         var recognizedItems = result.items
-        let allMemberIDs = members.map { $0.id }
         for i in 0..<recognizedItems.count {
-            recognizedItems[i].assignedMemberIDs = allMemberIDs
+            // Default to unselected per user preference
+            recognizedItems[i].assignedMemberIDs = []
         }
 
         self.items = recognizedItems
@@ -653,14 +687,20 @@ struct ReceiptItemAssignmentView: View {
         guard items.indices.contains(itemIndex) else { return }
         var assigned = items[itemIndex].assignedMemberIDs
         if let idx = assigned.firstIndex(of: memberID) {
-            // Remove member if more than 1 assigned
-            if assigned.count > 1 {
-                assigned.remove(at: idx)
-            }
+            assigned.remove(at: idx)
         } else {
             assigned.append(memberID)
         }
         items[itemIndex].assignedMemberIDs = assigned
+    }
+
+    private func toggleSelectAll(itemIndex: Int) {
+        guard items.indices.contains(itemIndex) else { return }
+        if items[itemIndex].assignedMemberIDs.count == members.count {
+            items[itemIndex].assignedMemberIDs = []
+        } else {
+            items[itemIndex].assignedMemberIDs = members.map { $0.id }
+        }
     }
 
     private func deleteItem(at offsets: IndexSet) {
@@ -681,7 +721,8 @@ struct ReceiptItemAssignmentView: View {
         }
 
         for item in items {
-            let assigned = item.assignedMemberIDs.isEmpty ? members.map { $0.id } : item.assignedMemberIDs
+            let assigned = item.assignedMemberIDs
+            guard !assigned.isEmpty else { continue }
             let splitPerPerson = item.totalPrice / Double(assigned.count)
             for mID in assigned {
                 memberItemTotals[mID, default: 0.0] += splitPerPerson

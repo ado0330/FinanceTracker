@@ -16,6 +16,7 @@ struct CategoryExpensesDetailSheet: View {
     let monthDate: Date
     let currencyCode: String
     let allMonthTransactions: [Transaction]
+    var transactionType: TransactionType = .expense
 
     @State var selectedCategoryName: String
     @State private var sortOption: SortOption = .highestFirst
@@ -29,11 +30,14 @@ struct CategoryExpensesDetailSheet: View {
         monthDate: Date,
         currencyCode: String,
         allMonthTransactions: [Transaction],
-        selectedCategoryName: String
+        selectedCategoryName: String,
+        transactionType: TransactionType = .expense
     ) {
         self.monthDate = monthDate
         self.currencyCode = currencyCode
         self.allMonthTransactions = allMonthTransactions
+        self.transactionType = transactionType
+        self.selectedCategoryName = selectedCategoryName
         self._selectedCategoryName = State(initialValue: selectedCategoryName)
     }
 
@@ -57,24 +61,24 @@ struct CategoryExpensesDetailSheet: View {
 
     // MARK: - Computed Properties
 
-    /// All expense transactions within the target month
-    private var monthExpenseTransactions: [Transaction] {
+    /// All transactions for the active transaction type within the target month
+    private var monthTransactions: [Transaction] {
         allMonthTransactions.filter { txn in
-            txn.type == .expense &&
+            txn.type == transactionType &&
             txn.date >= monthDate.startOfMonth &&
             txn.date <= monthDate.endOfMonth
         }
     }
 
-    private var totalMonthExpense: Double {
-        monthExpenseTransactions.reduce(0) { $0 + $1.amount }
+    private var totalMonthAmount: Double {
+        monthTransactions.reduce(0) { $0 + $1.amount }
     }
 
-    /// All distinct categories present in this month's expenses, ordered by total spending descending
+    /// All distinct categories present in this month's transactions, ordered by total amount descending
     private var availableCategories: [CategoryItem] {
         var map: [String: (icon: String, hex: String, total: Double, count: Int)] = [:]
 
-        for txn in monthExpenseTransactions {
+        for txn in monthTransactions {
             let name = txn.category?.name ?? "Uncategorised"
             let icon = txn.category?.icon ?? "folder"
             let hex = txn.category?.colorHex ?? "#8E8E93"
@@ -100,7 +104,7 @@ struct CategoryExpensesDetailSheet: View {
 
     /// Transactions for the currently selected category
     private var categoryTransactions: [Transaction] {
-        monthExpenseTransactions.filter { txn in
+        monthTransactions.filter { txn in
             let name = txn.category?.name ?? "Uncategorised"
             return name == selectedCategoryName
         }
@@ -125,17 +129,13 @@ struct CategoryExpensesDetailSheet: View {
     }
 
     private var categoryPercentage: Double {
-        guard totalMonthExpense > 0 else { return 0 }
-        return (categoryTotal / totalMonthExpense) * 100.0
+        guard totalMonthAmount > 0 else { return 0 }
+        return (categoryTotal / totalMonthAmount) * 100.0
     }
 
     private var categoryAverage: Double {
         guard !categoryTransactions.isEmpty else { return 0 }
         return categoryTotal / Double(categoryTransactions.count)
-    }
-
-    private var highestTransactionAmount: Double {
-        categoryTransactions.map(\.amount).max() ?? 0
     }
 
     // MARK: - Body
@@ -165,7 +165,7 @@ struct CategoryExpensesDetailSheet: View {
                 .padding(.vertical, 16)
             }
             .background(Color(uiColor: .systemGroupedBackground))
-            .navigationTitle("\(selectedCategoryName) Expenses")
+            .navigationTitle("\(selectedCategoryName) \(transactionType == .expense ? "Expenses" : "Income")")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -255,7 +255,7 @@ struct CategoryExpensesDetailSheet: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("Total Spent")
+                    Text(transactionType == .expense ? "Total Spent" : "Total Received")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
 
@@ -267,30 +267,18 @@ struct CategoryExpensesDetailSheet: View {
 
             Divider()
 
-            // Key Metrics Grid (4 stats)
-            HStack(spacing: 8) {
+            // Key Metrics (Month Share & Average per spend)
+            HStack(spacing: 12) {
                 metricCell(
                     title: "Month Share",
                     value: String(format: "%.1f%%", categoryPercentage),
-                    subtitle: "of total spend"
-                )
-
-                metricCell(
-                    title: "Transactions",
-                    value: "\(categoryTransactions.count)",
-                    subtitle: "total entries"
+                    subtitle: transactionType == .expense ? "of total spending" : "of total income"
                 )
 
                 metricCell(
                     title: "Average",
                     value: categoryAverage.compactCurrencyString(code: currencyCode),
-                    subtitle: "per spend"
-                )
-
-                metricCell(
-                    title: "Highest Single",
-                    value: highestTransactionAmount.compactCurrencyString(code: currencyCode),
-                    subtitle: "peak expense"
+                    subtitle: transactionType == .expense ? "per spend" : "per entry"
                 )
             }
         }
@@ -324,15 +312,9 @@ struct CategoryExpensesDetailSheet: View {
 
     private var listHeaderRow: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Itemized Expenses")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
-
-                Text("Sorted from highest expense to lowest")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
+            Text(transactionType == .expense ? "Itemized Expenses" : "Itemized Income")
+                .font(.headline)
+                .foregroundStyle(.primary)
 
             Spacer()
 
@@ -493,7 +475,7 @@ struct CategoryExpensesDetailSheet: View {
                 .foregroundStyle(.secondary)
                 .padding(.top, 24)
 
-            Text("No \(selectedCategoryName) expenses")
+            Text("No \(selectedCategoryName) \(transactionType == .expense ? "expenses" : "income")")
                 .font(.headline)
                 .foregroundStyle(.primary)
 

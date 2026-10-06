@@ -18,7 +18,7 @@ struct CategorySpendingComparisonCard: View {
     let currencyCode: String
 
     var targetDate: Date = .now
-    var onSelectCategory: ((String) -> Void)? = nil
+    var onSelectCategory: ((String, TransactionType) -> Void)? = nil
 
     enum ComparisonPeriod: String, CaseIterable, Identifiable {
         case month = "Month vs Month"
@@ -27,6 +27,7 @@ struct CategorySpendingComparisonCard: View {
         var id: String { rawValue }
     }
 
+    @State private var transactionType: TransactionType = .expense
     @State private var period: ComparisonPeriod = .month
     @State private var showAllCategories: Bool = false
 
@@ -44,9 +45,9 @@ struct CategorySpendingComparisonCard: View {
 
     // MARK: - Aggregations
 
-    private var currentExpenseTransactions: [Transaction] {
+    private var currentTransactions: [Transaction] {
         transactions.filter { txn in
-            guard txn.type == .expense else { return false }
+            guard txn.type == transactionType else { return false }
             switch period {
             case .month:
                 return txn.date >= thisMonthStart && txn.date <= thisMonthEnd
@@ -56,9 +57,9 @@ struct CategorySpendingComparisonCard: View {
         }
     }
 
-    private var previousExpenseTransactions: [Transaction] {
+    private var previousTransactions: [Transaction] {
         transactions.filter { txn in
-            guard txn.type == .expense else { return false }
+            guard txn.type == transactionType else { return false }
             switch period {
             case .month:
                 return txn.date >= lastMonthStart && txn.date <= lastMonthEnd
@@ -68,21 +69,21 @@ struct CategorySpendingComparisonCard: View {
         }
     }
 
-    private var currentTotalExpense: Double {
-        currentExpenseTransactions.reduce(0) { $0 + $1.amount }
+    private var currentTotalAmount: Double {
+        currentTransactions.reduce(0) { $0 + $1.amount }
     }
 
-    private var previousTotalExpense: Double {
-        previousExpenseTransactions.reduce(0) { $0 + $1.amount }
+    private var previousTotalAmount: Double {
+        previousTransactions.reduce(0) { $0 + $1.amount }
     }
 
     private var overallDiff: Double {
-        currentTotalExpense - previousTotalExpense
+        currentTotalAmount - previousTotalAmount
     }
 
     private var overallPctChange: Double? {
-        guard previousTotalExpense > 0 else { return nil }
-        return ((currentTotalExpense - previousTotalExpense) / previousTotalExpense) * 100.0
+        guard previousTotalAmount > 0 else { return nil }
+        return ((currentTotalAmount - previousTotalAmount) / previousTotalAmount) * 100.0
     }
 
     // MARK: - Category Comparison Model
@@ -107,7 +108,7 @@ struct CategorySpendingComparisonCard: View {
         // Collect all distinct category names across both periods
         var categoryMap: [String: (icon: String, hex: String, current: Double, previous: Double)] = [:]
 
-        for txn in currentExpenseTransactions {
+        for txn in currentTransactions {
             let name = txn.category?.name ?? "Other"
             let icon = txn.category?.icon ?? "folder"
             let hex = txn.category?.colorHex ?? "#1C1C1E"
@@ -115,7 +116,7 @@ struct CategorySpendingComparisonCard: View {
             categoryMap[name] = (icon: icon, hex: hex, current: existing.current + txn.amount, previous: existing.previous)
         }
 
-        for txn in previousExpenseTransactions {
+        for txn in previousTransactions {
             let name = txn.category?.name ?? "Other"
             let icon = txn.category?.icon ?? "folder"
             let hex = txn.category?.colorHex ?? "#1C1C1E"
@@ -159,14 +160,24 @@ struct CategorySpendingComparisonCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
-            // Header Row & Period Picker
+            // Header Row & Type / Period Pickers
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    Label("Spending Comparison", systemImage: "arrow.left.arrow.right")
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+                    Label(
+                        transactionType == .expense ? "Spending Comparison" : "Income Comparison",
+                        systemImage: "arrow.left.arrow.right"
+                    )
+                    .font(.headline)
+                    .foregroundStyle(.primary)
 
                     Spacer()
+
+                    Picker("Type", selection: $transactionType) {
+                        Text("Expense").tag(TransactionType.expense)
+                        Text("Income").tag(TransactionType.income)
+                    }
+                    .pickerStyle(.segmented)
+                    .frame(width: 155)
                 }
 
                 Picker("Period", selection: $period) {
@@ -189,7 +200,7 @@ struct CategorySpendingComparisonCard: View {
                         categoryComparisonRow(item)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                onSelectCategory?(item.name)
+                                onSelectCategory?(item.name, transactionType)
                             }
                     }
 
@@ -239,32 +250,44 @@ struct CategorySpendingComparisonCard: View {
                     .foregroundStyle(.secondary)
                     .textCase(.uppercase)
 
-                Text(currentTotalExpense.currencyString(code: currencyCode))
+                Text(currentTotalAmount.currencyString(code: currencyCode))
                     .font(.title3.weight(.bold))
                     .foregroundStyle(.primary)
 
-                Text("vs \(previousLabel): \(previousTotalExpense.currencyString(code: currencyCode))")
+                Text("vs \(previousLabel): \(previousTotalAmount.currencyString(code: currencyCode))")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            if previousTotalExpense > 0 {
-                let isSaved = overallDiff < 0
+            if previousTotalAmount > 0 {
+                let isPositiveOutcome = (transactionType == .expense) ? (overallDiff < 0) : (overallDiff > 0)
+                let deltaText: String = {
+                    if transactionType == .expense {
+                        return overallDiff < 0
+                            ? "Saved \(Swift.abs(overallDiff).currencyString(code: currencyCode))"
+                            : "Spent \(overallDiff.currencyString(code: currencyCode)) more"
+                    } else {
+                        return overallDiff >= 0
+                            ? "Earned \(overallDiff.currencyString(code: currencyCode)) more"
+                            : "Earned \(Swift.abs(overallDiff).currencyString(code: currencyCode)) less"
+                    }
+                }()
+
                 VStack(alignment: .trailing, spacing: 3) {
                     HStack(spacing: 4) {
-                        Image(systemName: isSaved ? "arrow.down.right" : "arrow.up.right")
+                        Image(systemName: overallDiff >= 0 ? "arrow.up.right" : "arrow.down.right")
                         Text(String(format: "%@%.1f%%", overallDiff >= 0 ? "+" : "", overallPctChange ?? 0))
                     }
                     .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isSaved ? .green : .primary)
+                    .foregroundStyle(isPositiveOutcome ? .green : .primary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(isSaved ? Color.green.opacity(0.12) : Color.primary.opacity(0.08))
+                    .background(isPositiveOutcome ? Color.green.opacity(0.12) : Color.primary.opacity(0.08))
                     .clipShape(Capsule())
 
-                    Text(isSaved ? "Saved \(Swift.abs(overallDiff).currencyString(code: currencyCode))" : "Spent \(overallDiff.currencyString(code: currencyCode)) more")
+                    Text(deltaText)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -307,13 +330,13 @@ struct CategorySpendingComparisonCard: View {
 
                         // Delta badge
                         if item.previousAmount > 0 {
-                            let isSaved = item.diff < 0
+                            let isPositiveCategory = (transactionType == .expense) ? (item.diff < 0) : (item.diff > 0)
                             Text(String(format: "%@%.0f%%", item.diff >= 0 ? "+" : "", item.pctChange ?? 0))
                                 .font(.caption2.weight(.bold))
-                                .foregroundStyle(isSaved ? .green : .primary)
+                                .foregroundStyle(isPositiveCategory ? .green : .primary)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(isSaved ? Color.green.opacity(0.12) : Color.primary.opacity(0.08))
+                                .background(isPositiveCategory ? Color.green.opacity(0.12) : Color.primary.opacity(0.08))
                                 .clipShape(Capsule())
                         } else if item.currentAmount > 0 && item.previousAmount == 0 {
                             Text("New")
@@ -384,7 +407,7 @@ struct CategorySpendingComparisonCard: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            Text("Add transactions across consecutive months to see category spending changes.")
+            Text("Add \(transactionType == .expense ? "expenses" : "income") across consecutive months to see category \(transactionType == .expense ? "spending" : "income") changes.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

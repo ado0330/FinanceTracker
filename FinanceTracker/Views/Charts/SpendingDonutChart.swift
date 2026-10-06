@@ -17,7 +17,10 @@ struct SpendingDonutChart: View {
     // MARK: - Period control (shared from parent via binding, or standalone)
     var period: SummaryPeriod = .monthly
     var targetDate: Date = .now
-    var onSelectCategory: ((String) -> Void)? = nil
+    var onSelectCategory: ((String, TransactionType) -> Void)? = nil
+
+    // MARK: - Transaction Type toggle (Expense / Income)
+    @State private var transactionType: TransactionType = .expense
 
     // MARK: - Selection state
     @State private var selectedAngle: Double? = nil
@@ -42,10 +45,28 @@ struct SpendingDonutChart: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
 
-            // Header
-            Label("Spending by Category", systemImage: "chart.pie.fill")
+            // Header with Type Toggle
+            HStack {
+                Label(
+                    transactionType == .expense ? "Spending by Category" : "Income by Category",
+                    systemImage: transactionType == .expense ? "chart.pie.fill" : "chart.pie"
+                )
                 .font(.headline)
                 .foregroundStyle(.primary)
+
+                Spacer()
+
+                Picker("Type", selection: $transactionType) {
+                    Text("Expense").tag(TransactionType.expense)
+                    Text("Income").tag(TransactionType.income)
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 155)
+                .onChange(of: transactionType) { _, _ in
+                    selectedAngle = nil
+                    selectedSliceID = nil
+                }
+            }
 
             if slices.isEmpty {
                 emptyState
@@ -99,7 +120,7 @@ struct SpendingDonutChart: View {
 
                     if onSelectCategory != nil {
                         Button {
-                            onSelectCategory?(sel.name)
+                            onSelectCategory?(sel.name, transactionType)
                         } label: {
                             HStack(spacing: 2) {
                                 Text("View All")
@@ -115,10 +136,10 @@ struct SpendingDonutChart: View {
                         .padding(.top, 2)
                     }
                 } else {
-                    Text("Total")
+                    Text(transactionType == .expense ? "Total Expense" : "Total Income")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    Text(totalExpense.currencyString(code: currency))
+                    Text(totalAmount.currencyString(code: currency))
                         .font(.title3.weight(.bold))
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
@@ -155,7 +176,7 @@ struct SpendingDonutChart: View {
                 .contentShape(Rectangle())
                 .onTapGesture {
                     if let onSelect = onSelectCategory {
-                        onSelect(slice.name)
+                        onSelect(slice.name, transactionType)
                     } else {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selectedAngle = nil
@@ -175,7 +196,7 @@ struct SpendingDonutChart: View {
             Image(systemName: "chart.pie")
                 .font(.system(size: 44))
                 .foregroundStyle(.secondary)
-            Text("No expense data")
+            Text(transactionType == .expense ? "No expense data" : "No income data")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
@@ -190,14 +211,14 @@ struct SpendingDonutChart: View {
     private var periodTransactions: [Transaction] {
         guard let l = appState.selectedLedger else { return [] }
         return allTransactions.filter { txn in
-            guard (txn.ledger?.id == l.id || txn.ledger == nil), txn.type == .expense else { return false }
+            guard (txn.ledger?.id == l.id || txn.ledger == nil), txn.type == transactionType else { return false }
             return period == .monthly
                 ? txn.date.isSameMonth(as: targetDate)
                 : txn.date.isSameWeek(as: targetDate)
         }
     }
 
-    private var totalExpense: Double {
+    private var totalAmount: Double {
         periodTransactions.reduce(0) { $0 + $1.amount }
     }
 

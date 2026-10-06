@@ -383,12 +383,21 @@ FinanceTracker/
 - [x] **BAK-15**: Added `activeBackupExportURL` dynamic property in `SettingsView.swift` to guarantee `ShareLink` is always populated with a fresh and verified file on disk ← **(DONE)**
 - [x] **BAK-16**: Added unit test `testCreateExportFileOverwritesExistingDirectory()` in `BackupTests.swift`; verified all 47 tests pass; bumped version to `v1.10.2 (Build 29)` ← **(DONE)**
 
+### Phase 40 — v1.11.0 Transfer Options, Splitter Multi-Select & Charts Streamlining
+- [x] **TXN-17**: Added "Record in Transactions" toggle in `TransferFundsSheet.swift`; when disabled, directly adjusts account balances (`initialBalance`) without polluting ledger history with transfer transactions ← **(DONE)**
+- [x] **SPLIT-21**: Redesigned member selection in `ReceiptItemAssignmentView.swift` to use an adaptive multi-column grid (`LazyVGrid`) with 1-tap "Select All" / "Deselect All" button, and default unselected state for rapid item assignment ← **(DONE)**
+- [x] **CHART-10**: Removed redundant `categoryExplorerCard` from `ChartsView.swift` while retaining interactive category drilldown via `CategorySpendingComparisonCard` and `SpendingDonutChart` ← **(DONE)**
+- [x] **CHART-11**: Removed `MonthConclusionCard` from `ChartsView.swift` and upgraded `CategorySpendingComparisonCard` and `SpendingDonutChart` with `[Expense | Income]` segmented toggles and income-aware comparison deltas ← **(DONE)**
+- [x] **CHART-12**: Removed "Sorted from highest expense to lowest" subtitle under Itemized Expenses in `CategoryExpensesDetailSheet.swift` ← **(DONE)**
+- [x] **CHART-13**: Streamlined `CategoryExpensesDetailSheet.swift` hero metrics to display only Month Share and Average Spend, decluttering the UI and supporting both expense and income drilldowns ← **(DONE)**
+- [x] **REL-30**: Bumped version to `v1.11.0 (Build 30)` in `project.yml` and `SettingsView.swift`, ran full test suite with 47 passing tests, and synchronized to GitHub ← **(DONE)**
+
 ---
 
 ## 📍 CURRENT STATUS
 
 ```
-Last Completed : Phase 39 — v1.10.2 Legacy Folder Cleanup & Atomic Export Fix (BAK-13 to BAK-16 DONE)
+Last Completed : Phase 40 — v1.11.0 Transfer Options, Splitter Multi-Select & Charts Streamlining (DONE)
 Next Task      : Ready for User Feedback / Next Feature Iteration
 Blocking Issues: None (Ready for Production)
 ```
@@ -404,4 +413,4 @@ Blocking Issues: None (Ready for Production)
 
 ---
 
-*Last updated: v1.10.2 (Build 29) — Phase 39 Completed & Released — 2026-10-05*
+*Last updated: v1.11.0 (Build 30) — Phase 40 Completed & Released — 2026-10-06*

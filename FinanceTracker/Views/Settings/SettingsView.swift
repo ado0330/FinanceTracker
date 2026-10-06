@@ -619,8 +619,8 @@ struct SettingsView: View {
     // MARK: - App Version
 
     private var appVersionString: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.10.2"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "29"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.11.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "30"
         return "v\(version) (Build \(build))"
     }
 }
